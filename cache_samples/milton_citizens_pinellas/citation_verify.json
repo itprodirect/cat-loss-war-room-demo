@@ -1,0 +1,108 @@
+{
+  "module": "citation_verify",
+  "disclaimer": "CITATION SPOT-CHECK ONLY \u2014 These are confidence signals, not verification. KeyCite / Shepardize every citation before reliance.",
+  "checks": [
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "http://www.citizensfla.com/",
+      "note": "Found on www.citizensfla.com \u2014 unvetted source, verify independently",
+      "case_name": "Citizens Property Insurance Corporation",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://homeinsurancedecoded.com/claims-deductibles/how-to-file-a-claim-with-homeowners-insurance/",
+      "note": "Found on homeinsurancedecoded.com \u2014 unvetted source, verify independently",
+      "case_name": "Homeowner Claims Help",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
+      "note": "Found on professional source: casetext.com \u2014 verify independently",
+      "case_name": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
+      "citation": "739 F.3d 678"
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
+      "note": "Found on professional source: casetext.com \u2014 verify independently",
+      "case_name": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
+      "citation": "753 F.2d 1011"
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
+      "note": "Found on professional source: casetext.com \u2014 verify independently",
+      "case_name": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
+      "citation": "577 F. Supp. 695"
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://law.justia.com/cases/florida/supreme-court/1985/65330-0.html",
+      "note": "Found on law.justia.com \u2014 unvetted source, verify independently",
+      "case_name": "Johnson v. Davis, 480 So. 2d 625",
+      "citation": "480 So. 2d 625"
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://lozanoadjusters.com/understanding-concurrent-causation-and-anti-concurrent-causation-clauses-in-insurance-claims/",
+      "note": "Found on lozanoadjusters.com \u2014 unvetted source, verify independently",
+      "case_name": "Concurrent Causation in Florida",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://levinlitigation.com/blog/what-does-hurricane-insurance-cover-in-florida/",
+      "note": "Found on levinlitigation.com \u2014 unvetted source, verify independently",
+      "case_name": "Water Damage From Hurricanes: What Florida Insurance Actually Covers - Insurance Attorney | Insurance Claim Lawyer",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://www.gray-robinson.com/docs/Jack-R-Reiter-Law360-The-Current-Status-of-Florida's-Concurrent-Cause-Doctrine.pdf",
+      "note": "Found on www.gray-robinson.com \u2014 unvetted source, verify independently",
+      "case_name": "Florida Court Rules on Concurrent Causation",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://parrish.law/citizens-florida-immune-from-bad-faith-and-consequential-damages/",
+      "note": "Found on parrish.law \u2014 unvetted source, verify independently",
+      "case_name": "Florida's Citizens Property Insurance May Be Immune From Bad ...",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://www.insurancejournal.com/news/southeast/2021/01/29/599257.htm",
+      "note": "Found on professional source: www.insurancejournal.com \u2014 verify independently",
+      "case_name": "Citizens Immune from Bad Faith, Not Liable for Non-Contractual Damages: Court",
+      "citation": ""
+    },
+    {
+      "status": "uncertain",
+      "badge": "\u26a0\ufe0f",
+      "source_url": "https://law.justia.com/cases/florida/supreme-court/2015/sc14-185.html",
+      "note": "Found on law.justia.com \u2014 unvetted source, verify independently",
+      "case_name": "Citizens Property Insurance Immunity from Bad Faith ...",
+      "citation": ""
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "verified": 0,
+    "uncertain": 12,
+    "not_found": 0
+  }
+}
