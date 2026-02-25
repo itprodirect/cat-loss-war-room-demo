@@ -11,3 +11,12 @@ build/
 .ipynb_checkpoints/
 .claude/
 docs/prompt-review.md
+
+# Live eval artifacts (never commit)
+.exa_cache_live/
+runs/
+eval/results/
+output/live/
+
+# Notebook noise
+**/.ipynb_checkpoints/

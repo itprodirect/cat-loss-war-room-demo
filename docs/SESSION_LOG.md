@@ -116,7 +116,36 @@ MVP is stable. The offline demo works end-to-end. Tests pass. Docs exist for bot
 
 ---
 
-## Session 4 — Firm Memory + Demo Polish (Prompt #3)
+## Session 4 — Live Eval Lane Scaffolding
+**Date:** 2026-02-25
+**Agent:** Claude Code (Opus 4.6)
+**Branch:** `feat/live-eval`
+**Status:** ✅ Complete
+
+### Goal
+Scaffold a separate "Live Eval Lane" so the pipeline can be tested against new
+public/redacted fact patterns without modifying the canonical demo notebook.
+
+### What was done
+- `.gitignore`: added entries for `.exa_cache_live/`, `runs/`, `eval/results/`, `output/live/`
+- `docs/LIVE_EVAL.md`: workflow, folder layout, metrics rubric, definition of done
+- `eval/README.md`: intake JSON rules, example schema, do-not-include list
+- `eval/intakes/.gitkeep`: empty dir ready for public intake JSONs
+- `eval/results/README.md`: placeholder (gitignored dir)
+- `notebooks/live_eval.ipynb`: copy of canonical notebook with live-eval overrides
+  (separate cache dir `.exa_cache_live/`, output to `output/live/`, banner warning)
+- `docs/HANDOFF.md`: added Section 9 (Live Eval Lane) with pointers
+- Canonical notebook `01_case_war_room.ipynb` unchanged
+- All 75 existing tests still pass
+
+### Next session
+- Create 2–3 public intake JSONs in `eval/intakes/` (Milton, TX Hail, Ida)
+- Run live eval end-to-end with Exa API key and record metrics in `eval/results/`
+- Iterate on rubric if needed
+
+---
+
+## Session 5 — Firm Memory + Demo Polish (Prompt #3)
 **Date:**
 **Agent:**
 **Branch:** `feat/firm-memory-polish`
@@ -127,7 +156,7 @@ Firm Memory Lite (Cell 7), pre-seed demo cache with real Exa results for Milton/
 
 ---
 
-## Session 5 — Demo Hardening
+## Session 6 — Demo Hardening
 **Date:**
 **Agent:**
 **Branch:**

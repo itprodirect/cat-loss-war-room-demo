@@ -123,7 +123,19 @@ CaseIntake → QueryPlan (12-18 queries) → [Weather | Carrier | CaseLaw] → C
 - Policy Language Checklist
 - Timeline Builder
 
-## 9. Doc Map
+## 9. Live Eval Lane
+
+A separate evaluation workflow lives on branch `feat/live-eval`. It lets us
+run the pipeline against public/redacted scenarios and record quality metrics
+**without touching the canonical demo notebook**.
+
+- **Docs:** [`docs/LIVE_EVAL.md`](LIVE_EVAL.md)
+- **Intake rules:** [`eval/README.md`](../eval/README.md)
+- **Notebook:** `notebooks/live_eval.ipynb` (copy of `01_case_war_room.ipynb` with separate cache/output dirs)
+
+All live outputs are gitignored. No client PII is ever committed.
+
+## 10. Doc Map
 
 | File | Purpose |
 |------|---------|
@@ -131,6 +143,7 @@ CaseIntake → QueryPlan (12-18 queries) → [Weather | Carrier | CaseLaw] → C
 | `AGENTS.md` | Pointer to CLAUDE.md for other agents |
 | `README.md` | Quickstart for humans |
 | `docs/HANDOFF.md` | **This file.** Full orientation. |
+| `docs/LIVE_EVAL.md` | Live Eval Lane workflow and metrics rubric |
 | `docs/DEMO_SCRIPT.md` | Talk track for live demo |
 | `docs/METHOD.md` | How cache/scoring/queries/modules work |
 | `docs/SAFETY_GUARDRAILS.md` | Disclaimers, data handling, boundaries |
