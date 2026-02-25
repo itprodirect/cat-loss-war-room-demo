@@ -30,7 +30,7 @@
       "reason": "Official source"
     },
     {
-      "title": "[PDF] POST TROPICAL CYCLONE REPORT - Weather.gov",
+      "title": "[PDF] POST TROPICAL CYCLONE REPORT",
       "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
       "badge": "\ud83d\udfe2",
       "reason": "Official source"
@@ -60,20 +60,20 @@
       "reason": "Official source"
     },
     {
-      "title": "Hurricane Costs - NOAA Office for Coastal Management",
+      "title": "Hurricane Costs",
       "url": "https://coast.noaa.gov/states/fast-facts/hurricane-costs.html",
       "badge": "\ud83d\udfe2",
       "reason": "Official source"
     },
     {
-      "title": "[PDF] HURRICANE HELENE",
-      "url": "https://www.nhc.noaa.gov/data/tcr/AL092024_Helene.pdf",
+      "title": "Storm Surge - Historic Events - MDL - Virtual Lab - NOAA VLab",
+      "url": "https://vlab.noaa.gov/web/mdl/storm-surge-events",
       "badge": "\ud83d\udfe2",
       "reason": "Official source"
     },
     {
-      "title": "Hurricane Milton",
-      "url": "https://usgs.gov/special-topics/hurricane-milton",
+      "title": "[PDF] Storm Data - National Centers for Environmental Information",
+      "url": "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/pub-pdf/storm_1971_08.pdf",
       "badge": "\ud83d\udfe2",
       "reason": "Official source"
     },
@@ -90,20 +90,20 @@
       "reason": "Official source"
     },
     {
+      "title": "News and Media: Disaster 4834 - FEMA",
+      "url": "https://www.fema.gov/disaster/4834/news-media",
+      "badge": "\ud83d\udfe2",
+      "reason": "Official source"
+    },
+    {
       "title": "DR-4834 Public Notice 001 - FEMA.gov",
       "url": "https://www.fema.gov/disaster-federal-register-notice/dr-4834-public-notice-001",
       "badge": "\ud83d\udfe2",
       "reason": "Official source"
     },
     {
-      "title": "Hurricanes Debby, Helene and Milton: A Guide to FEMA Assistance for Florida Residents",
-      "url": "https://fema.gov/blog/hurricanes-debby-helene-and-milton-guide-fema-assistance-florida-residents",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Catastrophe Reporting - floir",
-      "url": "https://floir.gov/tools-and-data/catastrophe-reporting",
+      "title": "Hurricane Milton",
+      "url": "https://floir.gov/home/hurricane-milton",
       "badge": "\ud83d\udfe2",
       "reason": "Official source"
     }

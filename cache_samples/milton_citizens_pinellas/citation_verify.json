@@ -5,26 +5,18 @@
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.citizensfla.com/",
-      "note": "Found on www.citizensfla.com \u2014 unvetted source, verify independently",
-      "case_name": "Citizens Property Insurance Corporation",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.travelers.com/resources/home/insuring/how-the-home-insurance-claim-process-works",
-      "note": "Found on www.travelers.com \u2014 unvetted source, verify independently",
-      "case_name": "Homeowner Claims Help",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
       "source_url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
       "note": "Found on professional source: casetext.com \u2014 verify independently",
       "case_name": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
       "citation": "739 F.3d 678"
+    },
+    {
+      "status": "verified",
+      "badge": "\u2705",
+      "source_url": "https://supremecourt.flcourts.gov/content/download/343992/file/01-1219_ini.pdf",
+      "note": "Found on official source: supremecourt.flcourts.gov",
+      "case_name": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
+      "citation": "819 So. 2d 732"
     },
     {
       "status": "uncertain",
@@ -45,64 +37,24 @@
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://law.justia.com/cases/florida/supreme-court/1985/65330-0.html",
-      "note": "Found on law.justia.com \u2014 unvetted source, verify independently",
+      "source_url": "https://casetext.com/case/johnson-v-davis-20",
+      "note": "Found on professional source: casetext.com \u2014 verify independently",
       "case_name": "Johnson v. Davis, 480 So. 2d 625",
       "citation": "480 So. 2d 625"
     },
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://content.govdelivery.com/accounts/FLOIR/bulletins/3d319a7",
-      "note": "Found on content.govdelivery.com \u2014 unvetted source, verify independently",
-      "case_name": "Notification to All Authorized Residential Property Insurers",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://yourinsuranceattorney.com/water-damage-from-hurricanes-what-florida-insurance-actually-covers/",
-      "note": "Found on yourinsuranceattorney.com \u2014 unvetted source, verify independently",
-      "case_name": "Water Damage From Hurricanes: What Florida Insurance Actually Covers - Insurance Attorney | Insurance Claim Lawyer",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.williamspa.com/faq/what-is-an-anti-concurrent-causation-clause/",
-      "note": "Found on www.williamspa.com \u2014 unvetted source, verify independently",
-      "case_name": "What Is an Anti-Concurrent Causation Clause?",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.insurancebusinessmag.com/us/news/claims/florida-court-hits-citizens-property-over-blocked-roof-damage-claim-539713.aspx",
-      "note": "Found on www.insurancebusinessmag.com \u2014 unvetted source, verify independently",
-      "case_name": "Florida's Citizens Property Insurance May Be Immune From Bad ...",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.insurancejournal.com/news/southeast/2021/01/29/599257.htm",
-      "note": "Found on professional source: www.insurancejournal.com \u2014 verify independently",
-      "case_name": "Citizens Immune from Bad Faith, Not Liable for Non-Contractual Damages: Court",
-      "citation": ""
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.rumberger.com/insights/first-dca-denies-citizens-property-insurance-corporation-immunity-from-bad-faith-claims/",
-      "note": "Found on www.rumberger.com \u2014 unvetted source, verify independently",
-      "case_name": "Citizens Property Insurance Immunity from Bad Faith Insurance ...",
-      "citation": ""
+      "source_url": "https://www.propertyinsurancecoveragelaw.com/blog/concurrent-causation-in-florida/",
+      "note": "Found on professional source: www.propertyinsurancecoveragelaw.com \u2014 verify independently",
+      "case_name": "Hurricane Irma \u2013 The State of Concurrent Causation and ACC Clauses in Florida | JD Supra",
+      "citation": "208 So. 3d 694"
     }
   ],
   "summary": {
-    "total": 12,
-    "verified": 0,
-    "uncertain": 12,
+    "total": 6,
+    "verified": 1,
+    "uncertain": 5,
     "not_found": 0
   }
 }
