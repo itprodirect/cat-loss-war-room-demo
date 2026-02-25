@@ -1,0 +1,4 @@
+python-dotenv
+nbformat
+exa-py
+pytest

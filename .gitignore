@@ -1,8 +1,11 @@
 .env
-
-cache/
-output/
-
 .venv/
-
 __pycache__/
+.pytest_cache/
+output/
+cache/
+*.pyc
+*.egg-info/
+dist/
+build/
+.ipynb_checkpoints/
