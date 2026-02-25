@@ -39,10 +39,32 @@ Given a catastrophic loss case (hurricane, hail, etc.), the war room notebook:
 5. **Case Law** — Searches relevant precedent organized by legal issue
 6. **Export** — Produces a structured research memo with source confidence badges
 
+## Jupyter Kernel (required)
+
+The notebook must run against the project venv. Register it once:
+
+```bash
+source .venv/bin/activate
+python -m pip install ipykernel
+python -m ipykernel install --user --name cat-loss-war-room-demo --display-name "cat-loss-war-room-demo (.venv)"
+```
+
+Then in JupyterLab select **Kernel → Change Kernel → cat-loss-war-room-demo (.venv)**.
+
+## Offline Demo
+
+No API key needed — cached results are committed in `cache_samples/`.
+
+```bash
+# Ensure USE_CACHE=true in .env (the default)
+source .venv/bin/activate
+jupyter notebook notebooks/01_case_war_room.ipynb
+# Run All — should complete in < 10 seconds
+```
+
 ## Current Status
 
-**Phase 1 complete:** Foundation (Cells 0–2) — intake, query plan, caching, source scoring.
-Cells 3–6 are stubs awaiting Exa API integration (Phase 2).
+**Phase 2 complete:** Cells 0–7 fully wired — weather, carrier, caselaw, citation spot-check, and markdown export all functional. Offline demo runs from committed cache samples. 75 tests passing.
 
 ## Project Structure
 
