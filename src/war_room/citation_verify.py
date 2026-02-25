@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from war_room.cache_io import cached_call
-from war_room.exa_client import ExaClient
+from war_room.exa_client import ExaClient, BudgetExhausted
 from war_room.source_scoring import score_url
 
 
@@ -19,6 +19,8 @@ DISCLAIMER = (
     "CITATION SPOT-CHECK ONLY — These are confidence signals, not verification. "
     "KeyCite / Shepardize every citation before reliance."
 )
+
+MAX_CHECKS = 6  # Cap citation checks per run to conserve Exa budget
 
 
 def spot_check_citations(
@@ -28,26 +30,26 @@ def spot_check_citations(
     use_cache: bool = True,
     cache_dir: str = "cache",
     cache_samples_dir: str = "cache_samples",
+    max_checks: int = MAX_CHECKS,
 ) -> dict[str, Any]:
-    """Spot-check all citations in a caselaw pack.
+    """Spot-check citations in a caselaw pack.
 
     Returns dict with: module, disclaimer, checks, summary.
     """
     case_key_base = "citecheck"
-    # Gather all cases from the pack
+    # Gather cases that have a non-blank citation
     all_cases = []
     for issue in caselaw_pack.get("issues", []):
         for case in issue.get("cases", []):
-            if case.get("name"):
+            citation = (case.get("citation") or "").strip()
+            if citation and case.get("name"):
                 all_cases.append(case)
 
     checks = []
-    for case in all_cases:
+    for case in all_cases[:max_checks]:
         name = case.get("name", "")
         citation = case.get("citation", "")
         search_term = f"{name} {citation}".strip()
-        if not search_term:
-            continue
 
         check_key = f"{case_key_base}__{search_term}"
 
@@ -82,16 +84,27 @@ def spot_check_citations(
     }
 
 
+# Tier priority: lower = better
+_TIER_RANK = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+
+
 def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
     """Run a single citation spot-check."""
     try:
-        hits = client.search(query, k=3)
-    except Exception:
+        hits = client.search(query, k=5)
+    except BudgetExhausted:
         return {
-            "status": "not_found",
-            "badge": "❌",
+            "status": "uncertain",
+            "badge": "⚠️",
             "source_url": None,
-            "note": "Search failed",
+            "note": "Budget exhausted — could not verify",
+        }
+    except Exception as e:
+        return {
+            "status": "uncertain",
+            "badge": "⚠️",
+            "source_url": None,
+            "note": f"Search error — could not verify: {type(e).__name__}",
         }
 
     if not hits:
@@ -102,28 +115,33 @@ def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
             "note": "No results found",
         }
 
-    # Check the best hit
-    best = hits[0]
-    score = score_url(best["url"])
+    # Score all hits and pick the best tier
+    scored_hits = []
+    for h in hits:
+        s = score_url(h["url"])
+        scored_hits.append((h, s))
+    scored_hits.sort(key=lambda x: _TIER_RANK.get(x[1]["tier"], 9))
 
-    if score["tier"] == "official":
+    best_hit, best_score = scored_hits[0]
+
+    if best_score["tier"] == "official":
         return {
             "status": "verified",
             "badge": "✅",
-            "source_url": best["url"],
-            "note": f"Found on official source: {score['hostname']}",
+            "source_url": best_hit["url"],
+            "note": f"Found on official source: {best_score['hostname']}",
         }
-    elif score["tier"] == "professional":
+    elif best_score["tier"] == "professional":
         return {
             "status": "uncertain",
             "badge": "⚠️",
-            "source_url": best["url"],
-            "note": f"Found on professional source: {score['hostname']} — verify independently",
+            "source_url": best_hit["url"],
+            "note": f"Found on professional source: {best_score['hostname']} — verify independently",
         }
     else:
         return {
             "status": "uncertain",
             "badge": "⚠️",
-            "source_url": best["url"],
-            "note": f"Found on {score['hostname']} — unvetted source, verify independently",
+            "source_url": best_hit["url"],
+            "note": f"Found on {best_score['hostname']} — unvetted source, verify independently",
         }

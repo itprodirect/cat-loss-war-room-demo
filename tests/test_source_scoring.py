@@ -66,3 +66,26 @@ def test_format_badge_output():
 def test_malformed_url_returns_unvetted():
     result = score_url("not-a-url")
     assert result["tier"] == "unvetted"
+
+
+def test_www_weather_gov_not_mangled():
+    """Regression: lstrip('www.') would mangle 'weather.gov' → 'eather.gov'.
+    The hostname field keeps the raw urlparse value; classification strips www. internally."""
+    result = score_url("https://www.weather.gov/report")
+    # Classification must still recognize it as official
+    assert result["tier"] == "official"
+    # With removeprefix, internal classification sees 'weather.gov' not 'eather.gov'
+    # (The hostname field keeps the raw parsed value from urlparse)
+    assert "weather.gov" in result["hostname"]
+
+
+def test_flcourts_gov_is_official():
+    result = score_url("https://www.flcourts.gov/case/123")
+    assert result["tier"] == "official"
+    assert result["badge"] == "🟢"
+
+
+def test_courtlistener_is_official():
+    result = score_url("https://www.courtlistener.com/opinion/12345/")
+    assert result["tier"] == "official"
+    assert result["badge"] == "🟢"

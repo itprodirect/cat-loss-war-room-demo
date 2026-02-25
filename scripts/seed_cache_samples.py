@@ -66,7 +66,7 @@ def main():
     print(f"Output dir: {samples_dir}")
     print()
 
-    client = ExaClient()
+    client = ExaClient(max_search_calls=40)
     print(f"Exa client initialized. Budget: {client.max_search_calls} calls")
     print()
 
@@ -126,16 +126,17 @@ def main():
         path.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
         print(f"  Saved: {path}")
 
-    # Also copy the raw cache files (keyed by module) so cached_call finds them
-    # The modules use keys like "weather__Hurricane Milton__Pinellas_FL"
-    # Copy from cache/ to cache_samples/ so they're found on next run
+    # Copy relevant raw cache files so cached_call finds them on next run.
+    # Only copy weather/carrier/caselaw/citecheck keys, not unrelated noise.
+    RELEVANT_PREFIXES = ("weather_", "carrier_", "caselaw_", "citecheck_")
     cache_dir_path = Path(cache_dir)
     if cache_dir_path.exists():
         for f in cache_dir_path.glob("*.json"):
+            if not any(f.name.startswith(p) for p in RELEVANT_PREFIXES):
+                continue
             dest = samples_dir / f.name
-            if not dest.exists():
-                shutil.copy2(f, dest)
-                print(f"  Copied cache -> samples: {f.name}")
+            shutil.copy2(f, dest)  # overwrite stale fixtures
+            print(f"  Copied cache -> samples: {f.name}")
 
     print(f"\nDone! Cache samples seeded in {out_dir}")
     print("Commit cache_samples/ to make offline demo work on clone.")

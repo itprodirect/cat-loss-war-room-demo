@@ -19,6 +19,8 @@ OFFICIAL_DOMAINS: set[str] = {
     "doi.sc.gov",
     "insurance.ca.gov",
     "dfs.ny.gov",
+    "flcourts.gov",        # FL state courts
+    "courtlistener.com",   # Free case-law repository (CourtListener)
 }
 
 PROFESSIONAL_DOMAINS: set[str] = {
@@ -47,7 +49,7 @@ PAYWALLED_DOMAINS: set[str] = {
 
 def _classify_domain(hostname: str) -> str:
     """Classify a hostname into a scoring tier."""
-    hostname = hostname.lower().lstrip("www.")
+    hostname = hostname.lower().removeprefix("www.")
 
     # Check paywalled first (takes priority)
     for domain in PAYWALLED_DOMAINS:

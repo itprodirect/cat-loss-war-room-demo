@@ -17,6 +17,18 @@ from war_room.source_scoring import score_url, PAYWALLED_DOMAINS
 
 CASELAW_EXCLUDE_DOMAINS = list(PAYWALLED_DOMAINS)
 
+_CASE_NAME_RE = re.compile(r"(?:^|\s)(v\.|vs\.|in re|ex rel\.)(?:\s|$)", re.IGNORECASE)
+
+
+def _is_case_like(result: dict) -> bool:
+    """Conservative guard: keep only results that look like actual cases."""
+    # Has a citation extracted → likely a case
+    if result.get("citation"):
+        return True
+    # Title matches a case-name pattern (e.g. "Smith v. Jones")
+    name = result.get("name", "") or result.get("title", "") or ""
+    return bool(_CASE_NAME_RE.search(name))
+
 
 def build_caselaw_pack(
     intake: CaseIntake,
@@ -98,10 +110,12 @@ def _assemble_pack(
         if total_cases >= 12:
             break
         cases = []
-        for r in issue_results[:3]:  # max 3 per issue
-            if total_cases >= 12:
+        for r in issue_results[:6]:  # scan up to 6, keep max 3
+            if total_cases >= 12 or len(cases) >= 3:
                 break
             case_info = _extract_case_info(r)
+            if not _is_case_like(case_info):
+                continue
             cases.append(case_info)
             total_cases += 1
 
