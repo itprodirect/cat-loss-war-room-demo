@@ -1,35 +1,147 @@
 """Weather data gathering module.
 
-TODO (Phase 2): Implement Exa search for weather data.
-- Run weather queries from query plan
-- Filter for .gov sources first
-- Output structured weather summary with source badges
-- Templated "litigation relevance" paragraph
+Runs weather queries from the query plan via Exa, preferring .gov sources.
+Extracts metrics only when present in retrieved content.
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
-from war_room.query_plan import CaseIntake, QuerySpec
+from war_room.cache_io import cached_call
+from war_room.exa_client import ExaClient
+from war_room.query_plan import CaseIntake, generate_query_plan
+from war_room.source_scoring import score_url
+
+GOV_WEATHER_DOMAINS = [
+    "noaa.gov", "weather.gov", "nhc.noaa.gov",
+    "fema.gov", "usgs.gov", "nasa.gov",
+]
 
 
-def fetch_weather_data(
+def build_weather_brief(
     intake: CaseIntake,
-    queries: list[QuerySpec],
+    client: ExaClient,
     *,
     use_cache: bool = True,
+    cache_dir: str = "cache",
+    cache_samples_dir: str = "cache_samples",
 ) -> dict[str, Any]:
-    """Fetch weather data for a case. Returns structured weather summary.
+    """Build a structured weather brief for the case.
 
-    TODO: Wire to Exa search in Phase 2.
+    Returns dict with: module, event_summary, key_observations, metrics, sources.
     """
-    raise NotImplementedError("Weather module not yet implemented — coming in Phase 2")
+    case_key = f"weather__{intake.event_name}__{intake.county}_{intake.state}"
+
+    def _fetch() -> dict[str, Any]:
+        queries = [q for q in generate_query_plan(intake) if q.module == "weather"]
+        all_results: list[dict] = []
+
+        for q in queries:
+            hits = client.search(
+                q.query,
+                k=5,
+                include_domains=q.preferred_domains or None,
+            )
+            for h in hits:
+                h["category"] = q.category
+            all_results.extend(hits)
+
+        return _assemble_brief(intake, all_results)
+
+    return cached_call(
+        case_key, _fetch,
+        cache_samples_dir=cache_samples_dir,
+        cache_dir=cache_dir,
+        use_cache=use_cache,
+    )
 
 
-def format_weather_summary(data: dict[str, Any]) -> str:
-    """Format weather data as a display summary with source badges.
+def _assemble_brief(
+    intake: CaseIntake, results: list[dict]
+) -> dict[str, Any]:
+    """Assemble structured brief from raw search results."""
+    # Deduplicate by URL
+    seen_urls: set[str] = set()
+    unique: list[dict] = []
+    for r in results:
+        if r["url"] and r["url"] not in seen_urls:
+            seen_urls.add(r["url"])
+            unique.append(r)
 
-    TODO: Implement in Phase 2.
-    """
-    raise NotImplementedError("Weather formatting not yet implemented — coming in Phase 2")
+    # Score and sort: official first, then professional, then unvetted
+    tier_order = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+    scored = []
+    for r in unique:
+        s = score_url(r["url"])
+        scored.append({**r, "_score": s})
+    scored.sort(key=lambda x: tier_order.get(x["_score"]["tier"], 9))
+
+    # Build observations from top results
+    observations = []
+    for r in scored[:10]:
+        snippet = r.get("snippet", "").strip()
+        if snippet:
+            observations.append(snippet[:300])
+
+    # Extract metrics defensively from all text
+    all_text = " ".join(r.get("text", "") for r in scored[:15])
+    metrics = _extract_metrics(all_text)
+
+    # Build source list
+    sources = []
+    for r in scored[:15]:
+        s = r["_score"]
+        sources.append({
+            "title": r.get("title", ""),
+            "url": r["url"],
+            "badge": s["badge"],
+            "reason": s["label"],
+        })
+
+    return {
+        "module": "weather",
+        "event_summary": (
+            f"{intake.event_name} — {intake.county} County, {intake.state} "
+            f"({intake.event_date})"
+        ),
+        "key_observations": observations[:8],
+        "metrics": metrics,
+        "sources": sources,
+    }
+
+
+def _extract_metrics(text: str) -> dict[str, Any]:
+    """Extract weather metrics from text. Returns only what's found."""
+    metrics: dict[str, Any] = {
+        "max_wind_mph": None,
+        "storm_surge_ft": None,
+        "rain_in": None,
+    }
+
+    # Wind speed (mph)
+    wind_matches = re.findall(
+        r'(\d{2,3})\s*(?:mph|miles?\s*per\s*hour)',
+        text, re.IGNORECASE,
+    )
+    if wind_matches:
+        metrics["max_wind_mph"] = max(int(w) for w in wind_matches)
+
+    # Storm surge (feet)
+    surge_matches = re.findall(
+        r'(?:storm\s*surge|surge)[^\d]{0,30}(\d+(?:\.\d+)?)\s*(?:feet|ft|foot)',
+        text, re.IGNORECASE,
+    )
+    if surge_matches:
+        metrics["storm_surge_ft"] = max(float(s) for s in surge_matches)
+
+    # Rainfall (inches)
+    rain_matches = re.findall(
+        r'(\d+(?:\.\d+)?)\s*(?:inches?\s*of\s*rain|inches?\s*rainfall)',
+        text, re.IGNORECASE,
+    )
+    if rain_matches:
+        metrics["rain_in"] = max(float(r) for r in rain_matches)
+
+    return metrics

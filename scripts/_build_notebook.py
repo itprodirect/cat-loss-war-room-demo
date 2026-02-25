@@ -1,0 +1,218 @@
+"""Build the war room notebook programmatically using nbformat."""
+import nbformat
+from pathlib import Path
+
+nb = nbformat.v4.new_notebook()
+nb.metadata.kernelspec = {
+    "display_name": "Python 3",
+    "language": "python",
+    "name": "python3",
+}
+
+# Cell 0: Title + Disclaimer (markdown)
+nb.cells.append(nbformat.v4.new_markdown_cell(
+    "# CAT-Loss War Room\n"
+    "\n"
+    "> **DEMO RESEARCH MEMO** — This notebook is for demonstration purposes only.\n"
+    "> It is **not legal advice**. All outputs must be independently verified.\n"
+    "> **Verify all citations** (KeyCite / Shepardize) before any legal reliance.\n"
+    "\n"
+    "---\n"
+    "\n"
+    "AI-powered catastrophic loss litigation research. Given a case intake, this notebook\n"
+    "generates targeted research queries across weather data, carrier intel, and case law."
+))
+
+# Cell 1: Imports + Configuration
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 1: Imports + Configuration"""\n'
+    'import sys, os\n'
+    'from pathlib import Path\n'
+    '\n'
+    '# Ensure src/ is on the path\n'
+    'ROOT = Path(".").resolve().parent\n'
+    'if str(ROOT / "src") not in sys.path:\n'
+    '    sys.path.insert(0, str(ROOT / "src"))\n'
+    '\n'
+    'from dotenv import load_dotenv\n'
+    'load_dotenv(ROOT / ".env")\n'
+    '\n'
+    '# Config\n'
+    'USE_CACHE = os.getenv("USE_CACHE", "true").lower() == "true"\n'
+    'CACHE_DIR = str(ROOT / os.getenv("CACHE_DIR", "cache"))\n'
+    'CACHE_SAMPLES_DIR = str(ROOT / os.getenv("CACHE_SAMPLES_DIR", "cache_samples"))\n'
+    'OUTPUT_DIR = str(ROOT / os.getenv("OUTPUT_DIR", "output"))\n'
+    '\n'
+    'print("=" * 50)\n'
+    'print("WAR ROOM CONFIG")\n'
+    'print("=" * 50)\n'
+    'print(f"  USE_CACHE:          {USE_CACHE}")\n'
+    'print(f"  CACHE_DIR:          {CACHE_DIR}")\n'
+    'print(f"  CACHE_SAMPLES_DIR:  {CACHE_SAMPLES_DIR}")\n'
+    'print(f"  OUTPUT_DIR:         {OUTPUT_DIR}")\n'
+    'print(f"  EXA_API_KEY:        {\'***set***\' if os.getenv(\'EXA_API_KEY\') else \'NOT SET\'}")\n'
+    'print("=" * 50)'
+))
+
+# Cell 2: Case Intake
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 2: Case Intake"""\n'
+    'from war_room.query_plan import CaseIntake\n'
+    '\n'
+    'intake = CaseIntake(\n'
+    '    event_name="Hurricane Milton",\n'
+    '    event_date="2024-10-09",\n'
+    '    state="FL",\n'
+    '    county="Pinellas",\n'
+    '    carrier="Citizens Property Insurance",\n'
+    '    policy_type="HO-3 Dwelling",\n'
+    '    posture=["denial", "bad_faith"],\n'
+    '    key_facts=[\n'
+    '        "Category 3 at landfall near Siesta Key",\n'
+    '        "Roof damage + water intrusion reported within 48 hours",\n'
+    '        "Claim denied citing pre-existing conditions",\n'
+    '    ],\n'
+    '    coverage_issues=[\n'
+    '        "wind vs water causation",\n'
+    '        "anti-concurrent causation clause",\n'
+    '        "duty to investigate",\n'
+    '    ],\n'
+    ')\n'
+    '\n'
+    'print(intake.format_card())'
+))
+
+# Cell 3: Query Plan
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 3: Query Plan Generation"""\n'
+    'from war_room.query_plan import generate_query_plan, format_query_plan\n'
+    '\n'
+    'queries = generate_query_plan(intake)\n'
+    'print(format_query_plan(queries))'
+))
+
+# Cell 4: Weather
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 4: Weather Corroboration"""\n'
+    'from war_room.exa_client import ExaClient\n'
+    'from war_room.weather_module import build_weather_brief\n'
+    '\n'
+    '# Initialize Exa client (only needed if USE_CACHE=False)\n'
+    'client = None\n'
+    'try:\n'
+    '    client = ExaClient()\n'
+    'except (ValueError, Exception):\n'
+    '    print("No EXA_API_KEY set — running from cache only")\n'
+    '\n'
+    'weather = build_weather_brief(\n'
+    '    intake, client,\n'
+    '    use_cache=USE_CACHE,\n'
+    '    cache_dir=CACHE_DIR,\n'
+    '    cache_samples_dir=CACHE_SAMPLES_DIR,\n'
+    ')\n'
+    '\n'
+    'print(f"Event: {weather[\'event_summary\']}")\n'
+    'print(f"Sources: {len(weather[\'sources\'])}")\n'
+    'print(f"Metrics: {weather[\'metrics\']}")\n'
+    'print()\n'
+    'print("Key Observations:")\n'
+    'for i, obs in enumerate(weather[\'key_observations\'][:5], 1):\n'
+    '    print(f"  {i}. {obs[:150]}")\n'
+    'print()\n'
+    'print("Top Sources:")\n'
+    'for s in weather[\'sources\'][:5]:\n'
+    '    print(f"  {s[\'badge\']} {s[\'title\'][:60]}")\n'
+    '    print(f"    {s[\'url\']}")'
+))
+
+# Cell 5: Carrier
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 5: Carrier Document Pack"""\n'
+    'from war_room.carrier_module import build_carrier_doc_pack\n'
+    '\n'
+    'carrier = build_carrier_doc_pack(\n'
+    '    intake, client,\n'
+    '    use_cache=USE_CACHE,\n'
+    '    cache_dir=CACHE_DIR,\n'
+    '    cache_samples_dir=CACHE_SAMPLES_DIR,\n'
+    ')\n'
+    '\n'
+    'print(f"Carrier: {carrier[\'carrier_snapshot\'][\'name\']}")\n'
+    'print(f"Documents: {len(carrier[\'document_pack\'])}")\n'
+    'print()\n'
+    'print("Document Pack:")\n'
+    'for d in carrier[\'document_pack\'][:8]:\n'
+    '    print(f"  {d[\'badge\']} [{d[\'doc_type\']}] {d[\'title\'][:60]}")\n'
+    'print()\n'
+    'print("Common Defenses:")\n'
+    'for d in carrier[\'common_defenses\']:\n'
+    '    print(f"  - {d}")\n'
+    'print()\n'
+    'print("Rebuttal Angles:")\n'
+    'for r in carrier[\'rebuttal_angles\']:\n'
+    '    print(f"  -> {r}")'
+))
+
+# Cell 6: Case Law + Citation Verify
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 6: Case Law + Citation Spot-Check"""\n'
+    'from war_room.caselaw_module import build_caselaw_pack\n'
+    'from war_room.citation_verify import spot_check_citations\n'
+    '\n'
+    'caselaw = build_caselaw_pack(\n'
+    '    intake, client,\n'
+    '    use_cache=USE_CACHE,\n'
+    '    cache_dir=CACHE_DIR,\n'
+    '    cache_samples_dir=CACHE_SAMPLES_DIR,\n'
+    ')\n'
+    '\n'
+    'print("Case Law by Issue:")\n'
+    'for issue in caselaw[\'issues\']:\n'
+    '    print(f"\\n  [{issue[\'issue\']}]")\n'
+    '    for c in issue[\'cases\']:\n'
+    '        cite = f" -- {c[\'citation\']}" if c.get(\'citation\') else \'\'\n'
+    '        print(f"    {c[\'badge\']} {c[\'name\'][:50]}{cite}")\n'
+    '\n'
+    'print("\\n" + "=" * 50)\n'
+    'print("Citation Spot-Check")\n'
+    'print("=" * 50)\n'
+    '\n'
+    'citecheck = spot_check_citations(\n'
+    '    caselaw, client,\n'
+    '    use_cache=USE_CACHE,\n'
+    '    cache_dir=CACHE_DIR,\n'
+    '    cache_samples_dir=CACHE_SAMPLES_DIR,\n'
+    ')\n'
+    '\n'
+    'for c in citecheck[\'checks\']:\n'
+    '    print(f"  {c[\'badge\']} {c[\'case_name\'][:40]} -- {c[\'note\'][:60]}")\n'
+    '\n'
+    's = citecheck[\'summary\']\n'
+    'print(f"\\nSummary: {s[\'verified\']} verified, {s[\'uncertain\']} uncertain, {s[\'not_found\']} not found")\n'
+    'print(f"\\n{citecheck[\'disclaimer\']}")'
+))
+
+# Cell 7: Export
+nb.cells.append(nbformat.v4.new_code_cell(
+    '"""Cell 7: Export Research Memo"""\n'
+    'from war_room.export_md import render_markdown_memo, write_markdown\n'
+    '\n'
+    'memo_md = render_markdown_memo(\n'
+    '    intake, weather, carrier, caselaw, citecheck, queries\n'
+    ')\n'
+    '\n'
+    'case_key = "milton_citizens_pinellas"\n'
+    'output_path = write_markdown(OUTPUT_DIR, case_key, memo_md)\n'
+    '\n'
+    'print(f"Memo saved to: {output_path}")\n'
+    'print(f"Length: {len(memo_md)} characters")\n'
+    'print()\n'
+    '# Show first 40 lines as preview\n'
+    'for line in memo_md.split(\'\\n\')[:40]:\n'
+    '    print(line)'
+))
+
+# Write
+out = Path(__file__).resolve().parent.parent / "notebooks" / "01_case_war_room.ipynb"
+nbformat.write(nb, str(out))
+print(f"Wrote {out} with {len(nb.cells)} cells")

@@ -1,39 +1,147 @@
 """Citation spot-check module.
 
-TODO (Phase 2): Implement Exa-based citation verification.
-- One Exa search per citation
-- Check if citation appears on court/legal site
-- Report: ✅ found on official site, ⚠️ found but unverified, ❌ not found
-- Mandatory disclaimer: "KeyCite/Shepardize before reliance"
+For each case citation, runs ONE Exa search to check if it appears
+on a court/legal site. Reports confidence level, not verification.
+
+Mandatory disclaimer: KeyCite/Shepardize before reliance.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import Any
+
+from war_room.cache_io import cached_call
+from war_room.exa_client import ExaClient, BudgetExhausted
+from war_room.source_scoring import score_url
 
 
-@dataclass
-class CitationCheck:
-    """Result of a citation spot-check."""
+DISCLAIMER = (
+    "CITATION SPOT-CHECK ONLY — These are confidence signals, not verification. "
+    "KeyCite / Shepardize every citation before reliance."
+)
 
-    citation: str
-    status: str       # "verified" | "uncertain" | "not_found"
-    badge: str        # "✅" | "⚠️" | "❌"
-    source_url: str | None = None
-    note: str = ""
+MAX_CHECKS = 6  # Cap citation checks per run to conserve Exa budget
 
 
-def verify_citation(citation: str, *, use_cache: bool = True) -> CitationCheck:
-    """Spot-check a single citation via Exa search.
+def spot_check_citations(
+    caselaw_pack: dict[str, Any],
+    client: ExaClient,
+    *,
+    use_cache: bool = True,
+    cache_dir: str = "cache",
+    cache_samples_dir: str = "cache_samples",
+    max_checks: int = MAX_CHECKS,
+) -> dict[str, Any]:
+    """Spot-check citations in a caselaw pack.
 
-    TODO: Wire to Exa search in Phase 2.
+    Returns dict with: module, disclaimer, checks, summary.
     """
-    raise NotImplementedError("Citation verification not yet implemented — coming in Phase 2")
+    case_key_base = "citecheck"
+    # Gather cases that have a non-blank citation
+    all_cases = []
+    for issue in caselaw_pack.get("issues", []):
+        for case in issue.get("cases", []):
+            citation = (case.get("citation") or "").strip()
+            if citation and case.get("name"):
+                all_cases.append(case)
+
+    checks = []
+    for case in all_cases[:max_checks]:
+        name = case.get("name", "")
+        citation = case.get("citation", "")
+        search_term = f"{name} {citation}".strip()
+
+        check_key = f"{case_key_base}__{search_term}"
+
+        def _verify(q=search_term) -> dict[str, Any]:
+            return _do_check(q, client)
+
+        result = cached_call(
+            check_key, _verify,
+            cache_samples_dir=cache_samples_dir,
+            cache_dir=cache_dir,
+            use_cache=use_cache,
+        )
+        result["case_name"] = name
+        result["citation"] = citation
+        checks.append(result)
+
+    # Summary counts
+    verified = sum(1 for c in checks if c["status"] == "verified")
+    uncertain = sum(1 for c in checks if c["status"] == "uncertain")
+    not_found = sum(1 for c in checks if c["status"] == "not_found")
+
+    return {
+        "module": "citation_verify",
+        "disclaimer": DISCLAIMER,
+        "checks": checks,
+        "summary": {
+            "total": len(checks),
+            "verified": verified,
+            "uncertain": uncertain,
+            "not_found": not_found,
+        },
+    }
 
 
-def verify_batch(citations: list[str], *, use_cache: bool = True) -> list[CitationCheck]:
-    """Spot-check a batch of citations.
+# Tier priority: lower = better
+_TIER_RANK = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
 
-    TODO: Implement in Phase 2.
-    """
-    raise NotImplementedError("Batch citation verification not yet implemented — coming in Phase 2")
+
+def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
+    """Run a single citation spot-check."""
+    try:
+        hits = client.search(query, k=5)
+    except BudgetExhausted:
+        return {
+            "status": "uncertain",
+            "badge": "⚠️",
+            "source_url": None,
+            "note": "Budget exhausted — could not verify",
+        }
+    except Exception as e:
+        return {
+            "status": "uncertain",
+            "badge": "⚠️",
+            "source_url": None,
+            "note": f"Search error — could not verify: {type(e).__name__}",
+        }
+
+    if not hits:
+        return {
+            "status": "not_found",
+            "badge": "❌",
+            "source_url": None,
+            "note": "No results found",
+        }
+
+    # Score all hits and pick the best tier
+    scored_hits = []
+    for h in hits:
+        s = score_url(h["url"])
+        scored_hits.append((h, s))
+    scored_hits.sort(key=lambda x: _TIER_RANK.get(x[1]["tier"], 9))
+
+    best_hit, best_score = scored_hits[0]
+
+    if best_score["tier"] == "official":
+        return {
+            "status": "verified",
+            "badge": "✅",
+            "source_url": best_hit["url"],
+            "note": f"Found on official source: {best_score['hostname']}",
+        }
+    elif best_score["tier"] == "professional":
+        return {
+            "status": "uncertain",
+            "badge": "⚠️",
+            "source_url": best_hit["url"],
+            "note": f"Found on professional source: {best_score['hostname']} — verify independently",
+        }
+    else:
+        return {
+            "status": "uncertain",
+            "badge": "⚠️",
+            "source_url": best_hit["url"],
+            "note": f"Found on {best_score['hostname']} — unvetted source, verify independently",
+        }

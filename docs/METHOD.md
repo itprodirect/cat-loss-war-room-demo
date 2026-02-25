@@ -41,6 +41,44 @@ Given a `CaseIntake`, generates 12–18 search queries organized by module:
 
 Queries include date ranges, domain preferences, and category tags.
 
-## Citation Verification (citation_verify.py) — Phase 2
+## Exa Search Wrapper (exa_client.py)
+
+All network calls go through `ExaClient`, a thin wrapper around `exa-py`.
+
+**Assumptions about exa-py (introspected from exa_py 1.x):**
+- `Exa(api_key)` constructor
+- `Exa.search(query, num_results=, include_domains=, start_published_date=, contents=)` returns `SearchResponse`
+- `contents=ContentsOptions(text={"max_characters": N})` inlines text in results
+- Result objects have: `url`, `title`, `score`, `published_date`, `text`, `summary`, `highlights`
+- `ContentsOptions` is a TypedDict from `exa_py.api`
+
+**Features:**
+- Simple retry with exponential backoff (3 attempts)
+- Budget guard: `MAX_SEARCH_CALLS` (default 30), raises `BudgetExhausted` if exceeded
+- Normalizes results to plain dicts: `{title, url, published_date, snippet, text, score}`
+
+## Citation Verification (citation_verify.py)
 
 Spot-check only: one Exa search per citation to verify it appears on a court or legal site. Reports ✅ (found on official site), ⚠️ (found but unverified source), or ❌ (not found). Not a substitute for KeyCite/Shepardize.
+
+## Weather Module (weather_module.py)
+
+Runs weather queries with gov-first domain preference (noaa.gov, weather.gov, fema.gov, etc.). Extracts metrics (wind mph, surge ft, rain in) via regex only when present in text — never invents numbers.
+
+## Carrier Module (carrier_module.py)
+
+Runs carrier_docs queries. Categorizes results by type (denial patterns, DOI complaints, regulatory actions, claims manuals). Extracts common defenses from text and generates rebuttal angles from case facts. Avoids overclaiming bad faith — describes "signals" with citations.
+
+## Case Law Module (caselaw_module.py)
+
+Runs caselaw queries, excluding paywalled domains (Westlaw, LexisNexis). Organizes results by legal issue. Extracts case names, citations, court, and year via regex. Limits to 6-12 cases total.
+
+## Export (export_md.py)
+
+Compiles all module outputs into a structured markdown memo with:
+- DRAFT / ATTORNEY WORK PRODUCT watermark
+- Case intake, weather, carrier, caselaw sections
+- Citation spot-check table
+- Query plan appendix
+- Deduplicated source appendix
+- Methodology & limitations section
