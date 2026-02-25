@@ -1,0 +1,12 @@
+# Normalize line endings for text files
+* text=auto
+
+# Keep notebooks stable
+*.ipynb text eol=lf
+
+# Common text formats
+*.md text eol=lf
+*.py text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
