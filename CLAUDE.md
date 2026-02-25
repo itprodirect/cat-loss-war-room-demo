@@ -1,9 +1,20 @@
 # CAT-Loss War Room — Claude Code Project Conventions
 
+## Primary objective
+Attorney-grade demo readiness and approachability. Every change should make the demo more reliable, the code more understandable, and the documentation more useful for both agents and non-technical professionals.
+
 ## What this project is
 A Jupyter-notebook-based "war room" tool for catastrophic insurance loss litigation.
 It uses Exa search to gather weather data, carrier playbook intel, and case law,
 then exports a structured research memo. Built for demo at Merlin Law Group.
+
+**Start here for full orientation:** [`docs/HANDOFF.md`](docs/HANDOFF.md)
+
+## Non-goals
+- No big refactors. Keep changes small and reviewable.
+- No SaaS build. This is a demo prototype, not a production service.
+- No new dependencies without explicit approval.
+- No ML-based scoring or classification. Deterministic domain dicts only.
 
 ## Quick setup
 ```bash
@@ -17,29 +28,40 @@ pytest -q
 ## Repo layout
 ```
 src/war_room/       # All Python logic lives here
-  cache_io.py       # Cache-first data access (cache_samples → cache → live)
-  source_scoring.py # 🟢🟡🔴 URL credibility scoring
+  exa_client.py     # Exa search wrapper (retry, budget guard)
+  cache_io.py       # Cache-first data access (cache_samples -> cache -> live)
+  source_scoring.py # Deterministic URL credibility scoring
   query_plan.py     # CaseIntake + QuerySpec + generate_query_plan()
-  weather_module.py # (stub) Weather data gathering
-  carrier_module.py # (stub) Carrier playbook intel
-  caselaw_module.py # (stub) Case law search
-  citation_verify.py# (stub) Citation spot-check
-  export_md.py      # (stub) Markdown export
+  weather_module.py # Weather data gathering (gov-first)
+  carrier_module.py # Carrier playbook intel + rebuttal angles
+  caselaw_module.py # Case law search (issue-organized, case-like filter)
+  citation_verify.py# Citation spot-check (best-tier, MAX_CHECKS cap)
+  export_md.py      # Markdown export with watermarks
 notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite
+tests/              # pytest test suite (75 tests, no network)
+scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 ```
 
-## Conventions
+## Workflow rules
+- **Small diffs.** One concern per commit. Keep changes reviewable.
+- **Run `pytest -q` before committing.** All 75 tests must pass.
 - **Keep notebooks thin.** Business logic goes in `src/war_room/`, notebooks just call it.
 - **Cache-first.** Every external call goes through `cached_call()`. Demo must work offline.
 - **No secrets in code.** `.env` is gitignored. Use `.env.example` for the template.
 - **Source scoring is deterministic.** Hardcoded domain dicts, not ML.
 - **Always include disclaimers.** Every output must say "DEMO RESEARCH MEMO / NOT LEGAL ADVICE / VERIFY ALL CITATIONS."
-- **Tests must pass.** Run `pytest -q` before committing.
+- **Log your work.** Add a session entry to `docs/SESSION_LOG.md` after each build session.
+
+## How to decide what to change
+Prioritize in this order:
+1. **Partner trust** — Does this make the demo more credible to an attorney?
+2. **Usability** — Does this make the tool easier to run and understand?
+3. **Reliability** — Does this reduce the chance of demo failure?
+4. **Extensibility** — Does this make future work easier? (lowest priority)
 
 ## Boundaries — what Claude Code should NOT do
 - Never commit `.env` or any file containing API keys
@@ -54,5 +76,8 @@ docs/               # Project documentation
 - `fix/` — bug fixes
 
 ## Current phase
-Phase 1 (Prompt #1): Foundation — Cells 0–2 + docs + tests.
-No Exa API calls yet. Cache system and query plan only.
+v0-demo shipped. Cells 0–7 working. Offline demo stable. 75 tests passing.
+
+## Next session focus
+See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation, roadmap, and known limitations.
+Next priority: Firm Memory Lite (Phase 3) or demo hardening for additional fact patterns.
