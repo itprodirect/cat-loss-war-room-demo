@@ -5,7 +5,7 @@
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "http://www.citizensfla.com/",
+      "source_url": "https://www.citizensfla.com/",
       "note": "Found on www.citizensfla.com \u2014 unvetted source, verify independently",
       "case_name": "Citizens Property Insurance Corporation",
       "citation": ""
@@ -13,8 +13,8 @@
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://homeinsurancedecoded.com/claims-deductibles/how-to-file-a-claim-with-homeowners-insurance/",
-      "note": "Found on homeinsurancedecoded.com \u2014 unvetted source, verify independently",
+      "source_url": "https://www.travelers.com/resources/home/insuring/how-the-home-insurance-claim-process-works",
+      "note": "Found on www.travelers.com \u2014 unvetted source, verify independently",
       "case_name": "Homeowner Claims Help",
       "citation": ""
     },
@@ -53,32 +53,32 @@
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://lozanoadjusters.com/understanding-concurrent-causation-and-anti-concurrent-causation-clauses-in-insurance-claims/",
-      "note": "Found on lozanoadjusters.com \u2014 unvetted source, verify independently",
-      "case_name": "Concurrent Causation in Florida",
+      "source_url": "https://content.govdelivery.com/accounts/FLOIR/bulletins/3d319a7",
+      "note": "Found on content.govdelivery.com \u2014 unvetted source, verify independently",
+      "case_name": "Notification to All Authorized Residential Property Insurers",
       "citation": ""
     },
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://levinlitigation.com/blog/what-does-hurricane-insurance-cover-in-florida/",
-      "note": "Found on levinlitigation.com \u2014 unvetted source, verify independently",
+      "source_url": "https://yourinsuranceattorney.com/water-damage-from-hurricanes-what-florida-insurance-actually-covers/",
+      "note": "Found on yourinsuranceattorney.com \u2014 unvetted source, verify independently",
       "case_name": "Water Damage From Hurricanes: What Florida Insurance Actually Covers - Insurance Attorney | Insurance Claim Lawyer",
       "citation": ""
     },
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.gray-robinson.com/docs/Jack-R-Reiter-Law360-The-Current-Status-of-Florida's-Concurrent-Cause-Doctrine.pdf",
-      "note": "Found on www.gray-robinson.com \u2014 unvetted source, verify independently",
-      "case_name": "Florida Court Rules on Concurrent Causation",
+      "source_url": "https://www.williamspa.com/faq/what-is-an-anti-concurrent-causation-clause/",
+      "note": "Found on www.williamspa.com \u2014 unvetted source, verify independently",
+      "case_name": "What Is an Anti-Concurrent Causation Clause?",
       "citation": ""
     },
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://parrish.law/citizens-florida-immune-from-bad-faith-and-consequential-damages/",
-      "note": "Found on parrish.law \u2014 unvetted source, verify independently",
+      "source_url": "https://www.insurancebusinessmag.com/us/news/claims/florida-court-hits-citizens-property-over-blocked-roof-damage-claim-539713.aspx",
+      "note": "Found on www.insurancebusinessmag.com \u2014 unvetted source, verify independently",
       "case_name": "Florida's Citizens Property Insurance May Be Immune From Bad ...",
       "citation": ""
     },
@@ -93,9 +93,9 @@
     {
       "status": "uncertain",
       "badge": "\u26a0\ufe0f",
-      "source_url": "https://law.justia.com/cases/florida/supreme-court/2015/sc14-185.html",
-      "note": "Found on law.justia.com \u2014 unvetted source, verify independently",
-      "case_name": "Citizens Property Insurance Immunity from Bad Faith ...",
+      "source_url": "https://www.rumberger.com/insights/first-dca-denies-citizens-property-insurance-corporation-immunity-from-bad-faith-claims/",
+      "note": "Found on www.rumberger.com \u2014 unvetted source, verify independently",
+      "case_name": "Citizens Property Insurance Immunity from Bad Faith Insurance ...",
       "citation": ""
     }
   ],
