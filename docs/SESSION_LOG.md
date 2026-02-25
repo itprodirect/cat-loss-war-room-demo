@@ -94,6 +94,28 @@ After reseeding with the patched code (user ran manually):
 
 ---
 
+## Stop Point — v0-demo shipped
+**Date:** 2026-02-25
+**Status:** Stable MVP
+
+### What was shipped
+- v0-demo tagged and released on GitHub
+- PR merged to main with all Phase 1 + Phase 2 + Codex review patches
+- Full pipeline working: intake → query plan → weather → carrier → caselaw → citation check → export
+- Offline demo runs from committed cache_samples in <10 seconds
+- 75 tests passing, 0 network calls in test suite
+- Documentation: HANDOFF.md, DEMO_SCRIPT.md, CLAUDE.md, README.md, METHOD.md, SAFETY_GUARDRAILS.md, CODEX_REVIEW.md
+
+### Why we stopped
+MVP is stable. The offline demo works end-to-end. Tests pass. Docs exist for both agents and humans. Further work (firm memory, additional fact patterns, PDF export) is additive, not corrective. The right next step is a partner demo, not more code.
+
+### Next session focus
+- Approachability for non-technical professionals (docs/HANDOFF.md is the canonical entry point)
+- Firm Memory Lite if Phase 3 proceeds
+- Demo hardening for additional fact patterns (TX Hail, Hurricane Ida) if live demo is scheduled
+
+---
+
 ## Session 4 — Firm Memory + Demo Polish (Prompt #3)
 **Date:**
 **Agent:**
