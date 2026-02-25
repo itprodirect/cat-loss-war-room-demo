@@ -1,0 +1,19 @@
+{
+  "case_id": "template_public_001",
+  "jurisdiction": {
+    "state": "FL",
+    "county": "Hillsborough"
+  },
+  "peril": "Hurricane",
+  "loss_date": "YYYY-MM-DD",
+  "carrier": "Unknown / Public",
+  "posture": "pre-suit",
+  "facts": [
+    "Public-only summary facts here (no names, no addresses, no claim/policy numbers)."
+  ],
+  "public_links": [
+    "https://example.com/public-source-1",
+    "https://example.com/public-source-2"
+  ],
+  "notes": "Do not include PII. City/county-level only."
+}
