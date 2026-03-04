@@ -1,141 +1,90 @@
-# CAT-Loss War Room — Handoff Document
+# CAT-Loss War Room - Handoff
 
-**Start here.** This is the canonical orientation for anyone picking up this repo — whether you're a coding agent, a developer, or a non-technical professional evaluating what this tool does.
+Start here for a practical orientation to the current repo state.
 
----
+## 1) What this repo is
 
-## 1. What This Repo Is
+A notebook-first litigation research assistant for catastrophic insurance loss work.
+Given a case intake, it assembles:
 
-The CAT-Loss War Room is an AI-powered research accelerator for catastrophic insurance loss litigation. An attorney enters a case (hurricane, carrier, location, posture) and the system produces a structured research package — weather corroboration, carrier denial patterns, relevant case law, citation spot-checks — exported as a markdown memo with source confidence badges. It is **not legal advice**. It is a starting point that saves hours of manual research.
+- weather corroboration,
+- carrier intelligence,
+- issue-organized case law,
+- citation spot-checks,
+- and a markdown research memo.
 
-## 2. Demo Promise
+This is research acceleration, not legal advice.
 
-Given a case intake (e.g. Hurricane Milton / Citizens Property Insurance / Pinellas County FL):
-
-- In **under 10 seconds** (cached) or **~60 seconds** (live), the notebook produces:
-  - Weather corroboration with .gov source preference and extracted metrics
-  - Carrier document pack with denial patterns, regulatory signals, and rebuttal angles
-  - Case law organized by legal issue with citation spot-checks
-  - A full markdown research memo exported to `output/`
-
-- The demo runs **offline** from committed cache samples. No API key required on first clone.
-
-## 3. Current Status
+## 2) Current status (as of March 4, 2026)
 
 | Item | Status |
-|------|--------|
-| Cells 0–7 (full pipeline) | Working |
-| Offline demo (USE_CACHE=true) | Working |
-| Tests | 75 passing, 0 network calls |
-| Cache samples (Milton/Citizens/Pinellas) | Committed |
-| Codex review patches (P0/P1/P2) | Applied |
-| Memo export | Working |
-| Tag `v0-demo` | Exists |
+|---|---|
+| Notebook cells 0-7 | Working |
+| Offline demo (`USE_CACHE=true`) | Working |
+| Tests | 81 passing, no network calls in tests |
+| CI | Fresh-env test gate + exa-py compatibility matrix |
+| Exa compatibility hardening (`#4`) | Complete and closed |
+| Cache samples | Milton/Citizens/Pinellas committed |
 
-## 4. How to Run
+## 3) What changed recently
 
-### Offline Demo (no API key)
+- Exa client now supports both older and newer `exa-py` contents APIs.
+- Dependency versions are pinned for reproducible installs.
+- CI now blocks merges if fresh-env tests fail.
+- CI also runs an `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`).
+- Adapter smoke tests were added for kwargs forwarding contracts.
+
+## 4) Quick run
 
 ```bash
-git clone <repo-url> && cd cat-loss-war-room-demo
 python -m venv .venv
-source .venv/bin/activate        # Windows Git Bash: source .venv/Scripts/activate
+source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env             # USE_CACHE=true is the default
-
-# Register Jupyter kernel (one-time)
-python -m pip install ipykernel
-python -m ipykernel install --user --name cat-loss-war-room-demo --display-name "cat-loss-war-room-demo (.venv)"
-
-# Run
+pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
-# Select kernel: cat-loss-war-room-demo (.venv)
-# Run All — should complete in < 10 seconds
 ```
 
-### Live Mode (with Exa API key)
+## 5) Architecture in one line
 
-```bash
-# Edit .env:
-#   EXA_API_KEY=your_key_here
-#   USE_CACHE=false
+`CaseIntake -> QueryPlan -> [Weather | Carrier | CaseLaw] -> CitationVerify -> Export`
 
-# Costs ~$0.30-0.50 per case run (~25-30 Exa API calls)
-# Results are cached in cache/ for subsequent runs
-```
+Core implementation lives in `src/war_room/`.
 
-### Re-seed Cache Samples
+## 6) Known limitations
 
-```bash
-# After running live, capture results for offline demo:
-python scripts/seed_cache_samples.py
-git add cache_samples/ && git commit -m "chore: reseed cache samples"
-```
+- Notebook UX is useful for demos but not ideal for non-technical users.
+- Case law relevance still needs stricter filtering/ranking in edge cases.
+- Only one fact pattern is pre-seeded in cache samples.
+- Export output quality is serviceable, but not yet polished for repeated client-facing use.
 
-## 5. Architecture in 60 Seconds
+## 7) Roadmap summary
 
-```
-CaseIntake → QueryPlan (12-18 queries) → [Weather | Carrier | CaseLaw] → CitationVerify → Export
-```
+### Now
+- #5 schema alignment for eval intake
+- #6 typed domain contracts
+- #7 retrieval provider abstraction and contracts
+- #8 multi-jurisdiction fixtures and snapshots
+- #9 expanded CI quality gates
 
-| Component | File | What It Does |
-|-----------|------|-------------|
-| Cache layer | `cache_io.py` | cache_samples/ → cache/ → live API. Demo never hits network. |
-| Exa wrapper | `exa_client.py` | Single entry point for all network calls. Retry + budget guard (40 calls max). |
-| Source scoring | `source_scoring.py` | Deterministic domain classification: 🟢 official / 🟡 professional / 🔴 unvetted / 🔒 paywalled |
-| Query plan | `query_plan.py` | CaseIntake dataclass + generates targeted queries by module |
-| Weather | `weather_module.py` | Gov-first search, regex metric extraction (wind/surge/rain) |
-| Carrier | `carrier_module.py` | Denial patterns, DOI complaints, rebuttal angle generation |
-| Case law | `caselaw_module.py` | Issue-organized results, case-like filter, paywalled exclusion |
-| Citation check | `citation_verify.py` | One search per citation, best-tier selection, MAX_CHECKS=6 cap |
-| Export | `export_md.py` | Full markdown memo with watermarks, source appendix, methodology |
-| Notebook | `notebooks/01_case_war_room.ipynb` | 8 cells (title → config → intake → query plan → weather → carrier → caselaw+cite → export) |
+### Next
+- #10 API orchestrator
+- #11 guided web intake and run-status UX
+- #12 evidence normalization and provenance
+- #13 caselaw quality v2
 
-## 6. What We Fixed (Codex Review)
+### Then
+- #14 citation verification hardening
+- #15 memo workspace v2
+- #16 firm memory v1
+- #17 observability and cost controls
+- #18 security baseline
+- #19 attorney pilot validation
 
-- **P0 — Non-case pages in caselaw pack.** Added `_is_case_like()` filter. Only actual cases (with citations or case-name patterns) make it through.
-- **P1 — Citation verify budget waste.** Skip blank citations, search k=5 (not 3), pick best-tier hit, cap at 6 checks. Errors return "uncertain" not "not found."
-- **P2 — Hostname normalization bug.** `lstrip("www.")` mangled domains. Fixed with `removeprefix("www.")`. Added flcourts.gov + courtlistener.com.
-- **P1 — Seed script fragility.** Budget headroom 30→40, overwrite stale fixtures, filter copy to relevant prefixes.
-- **Kernel mismatch.** Notebook ran against system Python. Fixed with ipykernel registration.
+## 8) Canonical docs
 
-## 7. Known Limitations / Deferred
-
-- **Export timestamps are non-deterministic.** `datetime.now()` in memo header. Not blocking — it's a draft artifact. Fix when we add export snapshot tests.
-- **Notebook cwd assumption.** `ROOT = Path(".").resolve().parent` works from `notebooks/` but is fragile. Fix if demo dry-run fails from a different working directory.
-- **Citation verification is spot-check only.** One Exa search per citation. Not a substitute for KeyCite/Shepardize. All outputs carry disclaimers.
-- **Single fact pattern cached.** Only Milton/Citizens/Pinellas is seeded. Additional patterns (TX Hail, Hurricane Ida) need live Exa runs + reseed.
-- **No firm memory yet.** Planned for Phase 3 — JSON-based memory that makes the tool "learn" across cases.
-- **No PDF export.** Markdown only. PDF is a Phase 3+ stretch goal.
-
-## 8. Roadmap
-
-### Phase 3 — Firm Memory + Polish
-- Firm Memory Lite: JSON load/save, pre-seeded demo entries (Citizens, FL experts)
-- Cache all 3 fact patterns (Milton, TX Hail, Ida)
-- Demo hardening: graceful degradation, timing targets (<10s cached)
-- Final README + DEMO_SCRIPT update with actual outputs
-
-### Phase 4 — Stretch
-- Expert Finder module
-- Depo/EUO Question Bank
-- PDF export (weasyprint)
-- Policy Language Checklist
-- Timeline Builder
-
-## 9. Doc Map
-
-| File | Purpose |
-|------|---------|
-| `CLAUDE.md` | Agent conventions (read automatically by Claude Code) |
-| `AGENTS.md` | Pointer to CLAUDE.md for other agents |
-| `README.md` | Quickstart for humans |
-| `docs/HANDOFF.md` | **This file.** Full orientation. |
-| `docs/DEMO_SCRIPT.md` | Talk track for live demo |
-| `docs/METHOD.md` | How cache/scoring/queries/modules work |
-| `docs/SAFETY_GUARDRAILS.md` | Disclaimers, data handling, boundaries |
-| `docs/CODEX_REVIEW.md` | What was fixed and what was deferred |
-| `docs/SESSION_LOG.md` | Build session history |
-| `docs/BUILD_CHECKLIST.md` | Phase-by-phase checklist |
-| `docs/DECISION_LOG.md` | Architecture decisions with rationale |
-| `docs/PROMPT_SEQUENCE.md` | Prompt pipeline status |
+- [README.md](../README.md): quickstart and status
+- [ROADMAP.md](ROADMAP.md): plain-language roadmap
+- [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md): issue-by-issue execution map
+- [SESSION_LOG.md](SESSION_LOG.md): build history
+- [METHOD.md](METHOD.md): module behavior and methodology
+- [SAFETY_GUARDRAILS.md](SAFETY_GUARDRAILS.md): safety boundaries

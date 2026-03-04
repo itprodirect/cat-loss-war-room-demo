@@ -41,14 +41,14 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (75 tests, no network)
+tests/              # pytest test suite (81 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 ```
 
 ## Workflow rules
 - **Small diffs.** One concern per commit. Keep changes reviewable.
-- **Run `pytest -q` before committing.** All 75 tests must pass.
+- **Run `pytest -q` before committing.** All 81 tests must pass.
 - **Keep notebooks thin.** Business logic goes in `src/war_room/`, notebooks just call it.
 - **Cache-first.** Every external call goes through `cached_call()`. Demo must work offline.
 - **No secrets in code.** `.env` is gitignored. Use `.env.example` for the template.
@@ -76,8 +76,9 @@ Prioritize in this order:
 - `fix/` — bug fixes
 
 ## Current phase
-v0-demo shipped. Cells 0–7 working. Offline demo stable. 75 tests passing.
+v0-demo shipped, v2 kickoff underway. Cells 0–7 stable, CI quality gates live, 81 tests passing.
 
 ## Next session focus
-See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation, roadmap, and known limitations.
-Next priority: Firm Memory Lite (Phase 3) or demo hardening for additional fact patterns.
+See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
+Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
+Next priority: issue #5 (intake schema alignment) and issue #6 (typed domain contracts).

@@ -73,7 +73,16 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**Phase 2 complete:** Cells 0–7 fully wired — weather, carrier, caselaw, citation spot-check, and markdown export all functional. Offline demo runs from committed cache samples. 75 tests passing.
+**V2 kickoff underway:** Core demo pipeline is stable, `81` tests are passing, and CI now enforces:
+- Fresh environment install + full test run
+- `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
+
+Issue `#4` (Exa compatibility + reproducible dependency baseline) is complete and closed.
+
+## Roadmap (Simple)
+
+- Read the plain-language roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
+- See issue-by-issue mapping: [docs/V2_ISSUE_MAP.md](docs/V2_ISSUE_MAP.md)
 
 ## Project Structure
 
