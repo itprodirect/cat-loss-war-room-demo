@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+from typing import Any, Literal, Mapping
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -114,3 +115,155 @@ class QuerySpec(BaseModel):
         if self.preferred_domains:
             domains = f" (prefer: {', '.join(self.preferred_domains)})"
         return f"  [{self.category}] {self.query}{date_range}{domains}"
+
+
+class SourceReference(BaseModel):
+    """Canonical source reference for module outputs."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    title: str = ""
+    url: str = Field(min_length=1)
+    badge: str = Field(min_length=1)
+    reason: str | None = None
+
+
+class WeatherMetrics(BaseModel):
+    """Normalized weather metric container."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    max_wind_mph: int | None = None
+    storm_surge_ft: float | None = None
+    rain_in: float | None = None
+
+
+class WeatherBrief(BaseModel):
+    """Typed weather module payload."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    module: Literal["weather"] = "weather"
+    event_summary: str = Field(min_length=1)
+    key_observations: list[str] = Field(default_factory=list)
+    metrics: WeatherMetrics
+    sources: list[SourceReference] = Field(default_factory=list)
+    warnings: list[str] | None = None
+
+
+class CarrierSnapshot(BaseModel):
+    """Carrier context for a run."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(min_length=1)
+    state: str = Field(min_length=1)
+    event: str = Field(min_length=1)
+    policy_type: str = Field(min_length=1)
+
+
+class CarrierDocument(BaseModel):
+    """Single document row in the carrier pack."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    doc_type: str = Field(min_length=1)
+    title: str = ""
+    url: str = Field(min_length=1)
+    badge: str = Field(min_length=1)
+    why_it_matters: str = Field(min_length=1)
+
+
+class CarrierDocPack(BaseModel):
+    """Typed carrier module payload."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    module: Literal["carrier"] = "carrier"
+    carrier_snapshot: CarrierSnapshot
+    document_pack: list[CarrierDocument] = Field(default_factory=list)
+    common_defenses: list[str] = Field(default_factory=list)
+    rebuttal_angles: list[str] = Field(default_factory=list)
+    sources: list[SourceReference] = Field(default_factory=list)
+    warnings: list[str] | None = None
+
+
+class CaseEntry(BaseModel):
+    """Single case summary in a legal issue bucket."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = ""
+    citation: str = ""
+    court: str = ""
+    year: str = ""
+    one_liner: str = ""
+    url: str = Field(min_length=1)
+    badge: str = Field(min_length=1)
+
+
+class CaseIssue(BaseModel):
+    """Case-law issue grouping."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    issue: str = Field(min_length=1)
+    cases: list[CaseEntry] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
+class CaseLawPack(BaseModel):
+    """Typed caselaw module payload."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    module: Literal["caselaw"] = "caselaw"
+    issues: list[CaseIssue] = Field(default_factory=list)
+    sources: list[SourceReference] = Field(default_factory=list)
+    warnings: list[str] | None = None
+
+
+def adapt_weather_brief(payload: Mapping[str, Any] | WeatherBrief) -> WeatherBrief:
+    """Validate/coerce weather payload into typed model."""
+    if isinstance(payload, WeatherBrief):
+        return payload
+    return WeatherBrief.model_validate(payload)
+
+
+def adapt_carrier_doc_pack(payload: Mapping[str, Any] | CarrierDocPack) -> CarrierDocPack:
+    """Validate/coerce carrier payload into typed model."""
+    if isinstance(payload, CarrierDocPack):
+        return payload
+    return CarrierDocPack.model_validate(payload)
+
+
+def adapt_caselaw_pack(payload: Mapping[str, Any] | CaseLawPack) -> CaseLawPack:
+    """Validate/coerce case-law payload into typed model."""
+    if isinstance(payload, CaseLawPack):
+        return payload
+    return CaseLawPack.model_validate(payload)
+
+
+def _model_to_payload(model: BaseModel) -> dict[str, Any]:
+    """Dump model while preserving legacy omission of `warnings` when empty."""
+    data = model.model_dump()
+    if data.get("warnings") is None:
+        data.pop("warnings", None)
+    return data
+
+
+def weather_brief_to_payload(payload: Mapping[str, Any] | WeatherBrief) -> dict[str, Any]:
+    """Return a weather payload normalized against the typed contract."""
+    return _model_to_payload(adapt_weather_brief(payload))
+
+
+def carrier_doc_pack_to_payload(
+    payload: Mapping[str, Any] | CarrierDocPack,
+) -> dict[str, Any]:
+    """Return a carrier payload normalized against the typed contract."""
+    return _model_to_payload(adapt_carrier_doc_pack(payload))
+
+
+def caselaw_pack_to_payload(payload: Mapping[str, Any] | CaseLawPack) -> dict[str, Any]:
+    """Return a caselaw payload normalized against the typed contract."""
+    return _model_to_payload(adapt_caselaw_pack(payload))

@@ -21,10 +21,11 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 100 passing, no network calls in tests |
+| Tests | 105 passing, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Implemented and committed |
+| Typed domain contracts (`#6`) | Slices 1-2 complete (intake/query + pack models) |
 | Cache samples | Milton/Citizens/Pinellas committed |
 
 ## 3) What changed recently
@@ -35,6 +36,7 @@ This is research acceleration, not legal advice.
 - CI also runs an `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`).
 - Adapter smoke tests were added for kwargs forwarding contracts.
 - Intake JSON now has strict schema validation and file-loading helpers.
+- Typed domain contracts now cover intake/query and weather/carrier/caselaw pack payload adapters.
 
 ## 4) Quick run
 

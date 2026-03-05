@@ -128,3 +128,19 @@ Status: Complete (slice 1)
 - Added `tests/test_models.py` covering model validation and serialization round-trip behavior.
 - Added `pydantic==2.11.7` to `requirements.txt` for reproducible typed-model support.
 - Verification: `pytest -q` -> 100 passed.
+
+## Session 12 - Issue #6 Slice 2: Typed Module Pack Models + Adapters
+Date: 2026-03-05
+Status: Complete (slice 2)
+
+- Expanded `src/war_room/models.py` with typed payload contracts for:
+  - `WeatherBrief`, `WeatherMetrics`, and `SourceReference`
+  - `CarrierDocPack`, `CarrierSnapshot`, and `CarrierDocument`
+  - `CaseLawPack`, `CaseIssue`, and `CaseEntry`
+- Added adapter helpers for validation + normalized payload dumping:
+  - `adapt_weather_brief` / `weather_brief_to_payload`
+  - `adapt_carrier_doc_pack` / `carrier_doc_pack_to_payload`
+  - `adapt_caselaw_pack` / `caselaw_pack_to_payload`
+- Wired weather/carrier/caselaw modules to emit adapter-validated payloads for both empty and assembled responses.
+- Added `tests/test_pack_adapters.py` to lock typed adapter behavior and validation failures.
+- Verification: `pytest -q` -> 105 passed.
