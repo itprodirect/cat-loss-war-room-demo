@@ -9,9 +9,10 @@ from __future__ import annotations
 import datetime as dt
 import json
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
+
+from war_room.models import CaseIntake, QuerySpec
 
 CASE_INTAKE_REQUIRED_FIELDS = (
     "event_name",
@@ -32,72 +33,6 @@ POSTURE_VALUE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 
 class IntakeValidationError(ValueError):
     """Raised when an intake payload fails strict schema validation."""
-
-
-@dataclass
-class CaseIntake:
-    """Structured case intake for a CAT loss matter."""
-
-    event_name: str               # e.g. "Hurricane Milton"
-    event_date: str               # e.g. "2024-10-09"
-    state: str                    # e.g. "FL"
-    county: str                   # e.g. "Pinellas"
-    carrier: str                  # e.g. "Citizens Property Insurance"
-    policy_type: str              # e.g. "HO-3 Dwelling"
-    posture: list[str] = field(default_factory=lambda: ["denial"])
-    key_facts: list[str] = field(default_factory=list)
-    coverage_issues: list[str] = field(default_factory=list)
-
-    def summary(self) -> str:
-        """One-line case summary."""
-        return (
-            f"{self.event_name} | {self.carrier} | "
-            f"{self.county} County, {self.state} | "
-            f"{self.policy_type} | Posture: {', '.join(self.posture)}"
-        )
-
-    def format_card(self) -> str:
-        """Multi-line formatted intake card for display."""
-        lines = [
-            "=" * 60,
-            "CASE INTAKE",
-            "=" * 60,
-            f"  Event:       {self.event_name} ({self.event_date})",
-            f"  Location:    {self.county} County, {self.state}",
-            f"  Carrier:     {self.carrier}",
-            f"  Policy:      {self.policy_type}",
-            f"  Posture:     {', '.join(self.posture)}",
-        ]
-        if self.key_facts:
-            lines.append(f"  Key Facts:   {'; '.join(self.key_facts)}")
-        if self.coverage_issues:
-            lines.append(f"  Issues:      {'; '.join(self.coverage_issues)}")
-        lines.append("=" * 60)
-        return "\n".join(lines)
-
-
-@dataclass
-class QuerySpec:
-    """A single search query specification."""
-
-    module: str                   # "weather" | "carrier_docs" | "caselaw"
-    query: str                    # The search query text
-    category: str                 # Sub-category within the module
-    date_start: Optional[str] = None
-    date_end: Optional[str] = None
-    preferred_domains: list[str] = field(default_factory=list)
-
-    def format_row(self) -> str:
-        """Format as a display row."""
-        date_range = ""
-        if self.date_start and self.date_end:
-            date_range = f" [{self.date_start} → {self.date_end}]"
-        elif self.date_start:
-            date_range = f" [from {self.date_start}]"
-        domains = ""
-        if self.preferred_domains:
-            domains = f" (prefer: {', '.join(self.preferred_domains)})"
-        return f"  [{self.category}] {self.query}{date_range}{domains}"
 
 
 def _require_non_empty_string(value: Any, field_name: str) -> str:
@@ -249,7 +184,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
     """
     queries: list[QuerySpec] = []
 
-    # --- WEATHER MODULE (4-6 queries) ---
     queries.append(QuerySpec(
         module="weather",
         query=f"{intake.event_name} {intake.county} County {intake.state} damage report",
@@ -285,7 +219,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         date_start=intake.event_date,
     ))
 
-    # --- CARRIER DOCS MODULE (4-6 queries) ---
     queries.append(QuerySpec(
         module="carrier_docs",
         query=f"{intake.carrier} {intake.event_name} claim denial {intake.state}",
@@ -315,7 +248,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         category="bad_faith_history",
     ))
 
-    # --- CASELAW MODULE (4-6 queries) ---
     _posture_str = " ".join(intake.posture)
     queries.append(QuerySpec(
         module="caselaw",
@@ -340,7 +272,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         category="bad_faith_precedent",
     ))
 
-    # Dynamic: add coverage-issue-specific queries
     for issue in intake.coverage_issues:
         queries.append(QuerySpec(
             module="caselaw",
@@ -348,7 +279,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
             category="coverage_issue",
         ))
 
-    # Dynamic: add posture-specific queries
     if "bad_faith" in intake.posture:
         queries.append(QuerySpec(
             module="caselaw",

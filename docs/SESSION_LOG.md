@@ -115,3 +115,16 @@ Status: Complete
 - Updated `eval/README.md` with explicit required/optional fields for both demo and live-eval lanes plus strict validation behavior.
 - Updated build checklist to reflect issue #5 completion.
 - Verification: `pytest -q` -> 96 passed.
+
+## Session 11 - Issue #6 Slice 1: Typed Intake/Query Models (Pydantic)
+Date: 2026-03-05
+Status: Complete (slice 1)
+
+- Added `src/war_room/models.py` with initial typed domain models:
+  - `CaseIntake` (Pydantic, strict extra-field rejection, field validation)
+  - `QuerySpec` (Pydantic, typed query contract)
+- Rewired `src/war_room/query_plan.py` to use the typed models for all query planning interfaces.
+- Preserved existing `#5` intake loader/validator behavior and error message patterns for compatibility.
+- Added `tests/test_models.py` covering model validation and serialization round-trip behavior.
+- Added `pydantic==2.11.7` to `requirements.txt` for reproducible typed-model support.
+- Verification: `pytest -q` -> 100 passed.

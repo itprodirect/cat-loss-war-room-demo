@@ -21,10 +21,10 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 96 passing, no network calls in tests |
+| Tests | 100 passing, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix |
 | Exa compatibility hardening (`#4`) | Complete and closed |
-| Intake schema alignment (`#5`) | Implemented; ready to close |
+| Intake schema alignment (`#5`) | Implemented and committed |
 | Cache samples | Milton/Citizens/Pinellas committed |
 
 ## 3) What changed recently
