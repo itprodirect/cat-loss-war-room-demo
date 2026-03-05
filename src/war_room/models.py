@@ -6,7 +6,7 @@ import datetime as dt
 import re
 from typing import Any, Literal, Mapping
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 POSTURE_VALUE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -223,6 +223,74 @@ class CaseLawPack(BaseModel):
     warnings: list[str] | None = None
 
 
+class CitationCheck(BaseModel):
+    """Single citation spot-check outcome."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    status: Literal["verified", "uncertain", "not_found"]
+    badge: str = Field(min_length=1)
+    source_url: str | None = None
+    note: str = Field(min_length=1)
+    case_name: str = ""
+    citation: str = ""
+
+
+class CitationSummary(BaseModel):
+    """Aggregate citation spot-check counts."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    total: int = Field(ge=0)
+    verified: int = Field(ge=0)
+    uncertain: int = Field(ge=0)
+    not_found: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _validate_total(self) -> "CitationSummary":
+        if self.total != self.verified + self.uncertain + self.not_found:
+            raise ValueError("summary total must equal verified + uncertain + not_found")
+        return self
+
+
+class CitationVerifyPack(BaseModel):
+    """Typed citation-verify module payload."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    module: Literal["citation_verify"] = "citation_verify"
+    disclaimer: str = Field(min_length=1)
+    checks: list[CitationCheck] = Field(default_factory=list)
+    summary: CitationSummary
+
+
+class MemoRenderInput(BaseModel):
+    """Typed contract for markdown memo rendering input."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    intake: CaseIntake
+    weather: WeatherBrief
+    carrier: CarrierDocPack
+    caselaw: CaseLawPack
+    citecheck: CitationVerifyPack
+    query_plan: list[QuerySpec] = Field(default_factory=list)
+
+
+def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
+    """Validate/coerce intake payload into typed model."""
+    if isinstance(payload, CaseIntake):
+        return payload
+    return CaseIntake.model_validate(payload)
+
+
+def adapt_query_spec(payload: Mapping[str, Any] | QuerySpec) -> QuerySpec:
+    """Validate/coerce query spec payload into typed model."""
+    if isinstance(payload, QuerySpec):
+        return payload
+    return QuerySpec.model_validate(payload)
+
+
 def adapt_weather_brief(payload: Mapping[str, Any] | WeatherBrief) -> WeatherBrief:
     """Validate/coerce weather payload into typed model."""
     if isinstance(payload, WeatherBrief):
@@ -242,6 +310,35 @@ def adapt_caselaw_pack(payload: Mapping[str, Any] | CaseLawPack) -> CaseLawPack:
     if isinstance(payload, CaseLawPack):
         return payload
     return CaseLawPack.model_validate(payload)
+
+
+def adapt_citation_verify_pack(
+    payload: Mapping[str, Any] | CitationVerifyPack,
+) -> CitationVerifyPack:
+    """Validate/coerce citation-verify payload into typed model."""
+    if isinstance(payload, CitationVerifyPack):
+        return payload
+    return CitationVerifyPack.model_validate(payload)
+
+
+def memo_render_input_from_parts(
+    intake: Mapping[str, Any] | CaseIntake,
+    weather: Mapping[str, Any] | WeatherBrief,
+    carrier: Mapping[str, Any] | CarrierDocPack,
+    caselaw: Mapping[str, Any] | CaseLawPack,
+    citecheck: Mapping[str, Any] | CitationVerifyPack,
+    query_plan: list[Mapping[str, Any] | QuerySpec],
+) -> MemoRenderInput:
+    """Build typed memo-render input from mixed dict/model payloads."""
+    typed_queries = [adapt_query_spec(item) for item in query_plan]
+    return MemoRenderInput(
+        intake=adapt_case_intake(intake),
+        weather=adapt_weather_brief(weather),
+        carrier=adapt_carrier_doc_pack(carrier),
+        caselaw=adapt_caselaw_pack(caselaw),
+        citecheck=adapt_citation_verify_pack(citecheck),
+        query_plan=typed_queries,
+    )
 
 
 def _model_to_payload(model: BaseModel) -> dict[str, Any]:
@@ -267,3 +364,10 @@ def carrier_doc_pack_to_payload(
 def caselaw_pack_to_payload(payload: Mapping[str, Any] | CaseLawPack) -> dict[str, Any]:
     """Return a caselaw payload normalized against the typed contract."""
     return _model_to_payload(adapt_caselaw_pack(payload))
+
+
+def citation_verify_pack_to_payload(
+    payload: Mapping[str, Any] | CitationVerifyPack,
+) -> dict[str, Any]:
+    """Return a citation-verify payload normalized against the typed contract."""
+    return _model_to_payload(adapt_citation_verify_pack(payload))

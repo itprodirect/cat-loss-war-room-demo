@@ -144,3 +144,19 @@ Status: Complete (slice 2)
 - Wired weather/carrier/caselaw modules to emit adapter-validated payloads for both empty and assembled responses.
 - Added `tests/test_pack_adapters.py` to lock typed adapter behavior and validation failures.
 - Verification: `pytest -q` -> 105 passed.
+
+## Session 13 - Issue #6 Slice 3: Typed Citation + Export Contracts
+Date: 2026-03-05
+Status: Complete (slice 3)
+
+- Extended `src/war_room/models.py` with typed citation and memo-render contracts:
+  - `CitationCheck`, `CitationSummary`, `CitationVerifyPack`
+  - `MemoRenderInput`
+  - adapter helpers: `adapt_citation_verify_pack`, `citation_verify_pack_to_payload`, `memo_render_input_from_parts`
+- Updated `src/war_room/citation_verify.py` to emit adapter-validated typed payloads while preserving legacy caselaw input compatibility for sparse `issues/cases` shapes.
+- Updated `src/war_room/export_md.py` to normalize memo inputs through typed contracts before rendering markdown.
+- Expanded package exports in `src/war_room/__init__.py` for new citation/export contract helpers.
+- Added regression tests:
+  - `tests/test_memo_contracts.py` (citation summary validation + memo input normalization)
+  - updated `tests/test_citation_verify.py` assertions for normalized badge tokens.
+- Verification: `pytest -q` -> 109 passed.
