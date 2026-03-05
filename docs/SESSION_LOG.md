@@ -81,3 +81,17 @@ Status: Complete
 - Updated `eval/results/README.md` and `.gitignore` behavior for local eval artifacts.
 - Linked the live eval lane from README and HANDOFF docs.
 - Verification: `pytest -q` -> 81 passed.
+
+## Session 9 - Hardening Pass: Null-Client Safety + Caselaw Precision
+Date: 2026-03-05
+Status: Complete
+
+- Added graceful null-client fallbacks in weather/carrier/caselaw module entrypoints.
+- Modules now prefer cache when available and return structured empty payloads when live retrieval is unavailable.
+- Tightened caselaw case-like filtering:
+  - citation-only items now require a trusted legal/court host,
+  - case-name patterns still pass.
+- Softened assertive carrier phrasing to evidence-oriented language.
+- Added regression tests for all fallback and filter hardening behavior.
+- Updated V2 blueprint note to reference `_template_case_intake.json`.
+- Verification: `pytest -q` -> 85 passed.

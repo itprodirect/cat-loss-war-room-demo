@@ -1,15 +1,16 @@
-"""Tests for caselaw_module — no network calls."""
+﻿"""Tests for caselaw_module - no network calls."""
 
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from war_room.caselaw_module import _assemble_pack, _extract_case_info
+from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
 from war_room.query_plan import CaseIntake
 
 
-def _sample_intake():
+def _sample_intake() -> CaseIntake:
     return CaseIntake(
         event_name="Hurricane Milton",
         event_date="2024-10-09",
@@ -21,7 +22,7 @@ def _sample_intake():
     )
 
 
-def test_assemble_pack_structure():
+def test_assemble_pack_structure() -> None:
     results = [
         {
             "url": "https://scholar.google.com/case1",
@@ -37,23 +38,23 @@ def test_assemble_pack_structure():
     assert isinstance(pack["sources"], list)
 
 
-def test_extract_case_info():
+def test_extract_case_info() -> None:
     result = {
         "url": "https://scholar.google.com/case",
         "title": "Smith v. Insurance Co",
         "snippet": "Wind damage coverage case",
         "text": "Smith v. Insurance Co, 234 So. 3d 789 (Fla. App. 2022). The court found coverage...",
-        "_score": {"tier": "professional", "badge": "🟡"},
+        "_score": {"tier": "professional", "badge": "X"},
     }
     info = _extract_case_info(result)
     assert info["name"] == "Smith v. Insurance Co"
     assert info["url"] == "https://scholar.google.com/case"
-    assert info["badge"] == "🟡"
+    assert info["badge"] == "X"
     assert "citation" in info
     assert "year" in info
 
 
-def test_pack_limits_cases():
+def test_pack_limits_cases() -> None:
     """Pack should return at most 12 cases total."""
     results = [
         {
@@ -68,3 +69,21 @@ def test_pack_limits_cases():
     pack = _assemble_pack(_sample_intake(), results)
     total = sum(len(issue["cases"]) for issue in pack["issues"])
     assert total <= 12
+
+
+def test_build_caselaw_pack_without_client_returns_structured_fallback() -> None:
+    intake = _sample_intake()
+    with tempfile.TemporaryDirectory() as cache_dir, tempfile.TemporaryDirectory() as samples_dir:
+        pack = build_caselaw_pack(
+            intake,
+            client=None,
+            use_cache=False,
+            cache_dir=cache_dir,
+            cache_samples_dir=samples_dir,
+        )
+
+    assert pack["module"] == "caselaw"
+    assert pack["issues"] == []
+    assert pack["sources"] == []
+    assert "warnings" in pack
+    assert any("No Exa client available" in warning for warning in pack["warnings"])

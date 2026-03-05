@@ -1,15 +1,16 @@
-"""Tests for weather_module — no network calls, uses mock/cache."""
+﻿"""Tests for weather_module - no network calls, uses mock/cache."""
 
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from war_room.weather_module import _extract_metrics, _assemble_brief
 from war_room.query_plan import CaseIntake
+from war_room.weather_module import _assemble_brief, _extract_metrics, build_weather_brief
 
 
-def _sample_intake():
+def _sample_intake() -> CaseIntake:
     return CaseIntake(
         event_name="Hurricane Milton",
         event_date="2024-10-09",
@@ -20,33 +21,33 @@ def _sample_intake():
     )
 
 
-def test_extract_metrics_wind():
+def test_extract_metrics_wind() -> None:
     text = "Maximum sustained winds of 120 mph were recorded near landfall."
-    m = _extract_metrics(text)
-    assert m["max_wind_mph"] == 120
+    metrics = _extract_metrics(text)
+    assert metrics["max_wind_mph"] == 120
 
 
-def test_extract_metrics_surge():
+def test_extract_metrics_surge() -> None:
     text = "Storm surge of 8.5 feet was observed along the coast."
-    m = _extract_metrics(text)
-    assert m["storm_surge_ft"] == 8.5
+    metrics = _extract_metrics(text)
+    assert metrics["storm_surge_ft"] == 8.5
 
 
-def test_extract_metrics_rain():
+def test_extract_metrics_rain() -> None:
     text = "The area received 12.3 inches of rainfall over 24 hours."
-    m = _extract_metrics(text)
-    assert m["rain_in"] == 12.3
+    metrics = _extract_metrics(text)
+    assert metrics["rain_in"] == 12.3
 
 
-def test_extract_metrics_none():
+def test_extract_metrics_none() -> None:
     text = "The storm caused significant damage to the region."
-    m = _extract_metrics(text)
-    assert m["max_wind_mph"] is None
-    assert m["storm_surge_ft"] is None
-    assert m["rain_in"] is None
+    metrics = _extract_metrics(text)
+    assert metrics["max_wind_mph"] is None
+    assert metrics["storm_surge_ft"] is None
+    assert metrics["rain_in"] is None
 
 
-def test_assemble_brief_structure():
+def test_assemble_brief_structure() -> None:
     results = [
         {
             "url": "https://weather.gov/report",
@@ -70,3 +71,21 @@ def test_assemble_brief_structure():
     assert isinstance(brief["metrics"], dict)
     assert isinstance(brief["sources"], list)
     assert len(brief["sources"]) == 2
+
+
+def test_build_weather_brief_without_client_returns_structured_fallback() -> None:
+    intake = _sample_intake()
+    with tempfile.TemporaryDirectory() as cache_dir, tempfile.TemporaryDirectory() as samples_dir:
+        brief = build_weather_brief(
+            intake,
+            client=None,
+            use_cache=False,
+            cache_dir=cache_dir,
+            cache_samples_dir=samples_dir,
+        )
+
+    assert brief["module"] == "weather"
+    assert brief["sources"] == []
+    assert brief["key_observations"] == []
+    assert "warnings" in brief
+    assert any("No Exa client available" in warning for warning in brief["warnings"])

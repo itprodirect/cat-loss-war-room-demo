@@ -1,4 +1,4 @@
-# CAT-Loss War Room V2 Blueprint
+﻿# CAT-Loss War Room V2 Blueprint
 
 ## 1) Deep-Dive Assessment (Current Repo)
 
@@ -29,7 +29,7 @@
   - Version-safe contents options + pinned dependencies + CI matrix are now in place.
 - Live-eval intake schema is inconsistent.
   - `eval/README.md` says intake JSON should match `CaseIntake`.
-  - `eval/intakes/_template_public_intake.json` does not match `CaseIntake` fields.
+  - Keep `eval/intakes/_template_case_intake.json` aligned with `CaseIntake` fields.
 - Caselaw quality still allows non-case content into issue packs.
   - Citation-like text in commentary pages can pass current filter logic.
 - Notebook runtime can degrade badly outside happy path.
@@ -286,3 +286,4 @@ Guardrails:
 3. Finalize retrieval contract boundary and tests (issue #7).
 4. Build multi-jurisdiction fixture + snapshot quality lane (issue #8).
 5. Expand CI quality gates and release criteria (issue #9).
+
