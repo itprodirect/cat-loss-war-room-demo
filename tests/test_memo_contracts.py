@@ -1,12 +1,7 @@
 """Tests for typed citation/export contracts (issue #6 slice 3)."""
 
-import sys
-from pathlib import Path
-
 import pytest
 from pydantic import ValidationError
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.export_md import render_markdown_memo
 from war_room.models import (

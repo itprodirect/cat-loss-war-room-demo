@@ -22,6 +22,8 @@ python -m venv .venv
 source .venv/bin/activate        # Linux/Mac
 # source .venv/Scripts/activate  # Windows Git Bash
 pip install -r requirements.txt
+pip install -e . --no-deps --no-build-isolation
+python -m war_room
 pytest -q
 ```
 
@@ -31,6 +33,7 @@ src/war_room/       # All Python logic lives here
   exa_client.py     # Exa search wrapper (retry, budget guard)
   cache_io.py       # Cache-first data access (cache_samples -> cache -> live)
   source_scoring.py # Deterministic URL credibility scoring
+  models.py         # Pydantic typed domain models and adapter helpers
   query_plan.py     # CaseIntake + QuerySpec + generate_query_plan()
   weather_module.py # Weather data gathering (gov-first)
   carrier_module.py # Carrier playbook intel + rebuttal angles
@@ -44,6 +47,9 @@ output/             # Generated reports (gitignored)
 tests/              # pytest test suite (109 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
+apps/               # V2 app placeholders (web/api)
+workers/            # V2 worker placeholders
+packages/           # V2 shared-package placeholders
 ```
 
 ## Workflow rules
@@ -76,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, v2 kickoff expanded into a deeper foundation-planning phase. Cells 0-7 stable, CI quality gates live, 109 tests passing.
+v0-demo shipped, issue #22 complete, and V2 foundation work is moving into workflow/schema/quality definition. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: finish the remaining scope in issue #6 while starting the new V2 foundation issues #22, #23, #24, and #27 before major product implementation.
+Next priority: move to issue #23 after foundation completion, while continuing #6, #24, and #27 alignment work.

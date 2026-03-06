@@ -1,10 +1,7 @@
 """Tests for cache_io module."""
 
-import sys
 import tempfile
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.cache_io import normalize_key, cache_get, cache_set, cached_call
 

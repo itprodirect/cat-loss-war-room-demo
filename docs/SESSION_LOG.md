@@ -53,12 +53,14 @@ Status: Complete
 - Merged to `main`.
 
 ## Current Snapshot
-Date: 2026-03-04
+Date: 2026-03-06
 
-- Branch baseline: `main` contains PR #20 changes.
-- Test status: 81 passing.
+- Branch baseline: `main` contains PR #20 and PR #21 changes.
+- Test status: 115 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Next priority: issue #5 (schema alignment), then #6 (typed contracts).
+- Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
+- V2 foundation issues #22-#27 created and documented.
+- Next priority: start #23, continue #24 and #27 framing, and finish #6 remaining scope.
 
 ## Session 7 - Documentation Refresh and Roadmap Simplification
 Date: 2026-03-04
@@ -211,3 +213,53 @@ Status: Complete
   - `#25` AI guardrails + eval harness,
   - `#26` human review workflow,
   - `#27` quality rubric + release scorecard.
+
+## Session 17 - Issue Triage and Roadmap Ranking
+Date: 2026-03-06
+Status: Complete
+
+- Audited all open and closed GitHub issues against the current repo docs and current build state.
+- Confirmed there were no safe duplicate/stale issues to close outright.
+- Tightened active roadmap language to reflect the true work order for the current version.
+- Narrowed stale issue scope on GitHub so partially-complete issues no longer read like untouched work:
+  - `#6` remaining typed-contract work only,
+  - `#9` CI expansion beyond existing gates,
+  - `#11` implementation follows `#23`,
+  - `#12` implementation follows `#24`.
+- Added a best-to-worst ranked priority list to `docs/ROADMAP.md`.
+
+## Session 18 - Issue #22 Product Foundation
+Date: 2026-03-06
+Status: Complete
+
+- Added editable package metadata with `pyproject.toml` for the existing `src/` layout.
+- Added shared runtime bootstrap and typed settings helpers:
+  - `src/war_room/bootstrap.py`
+  - `src/war_room/settings.py`
+  - `src/war_room/__main__.py`
+- Regenerated the notebook so it uses the shared bootstrap/settings flow instead of `sys.path` mutation and ad hoc env loading.
+- Updated `scripts/seed_cache_samples.py` to use the shared bootstrap path.
+- Removed per-file `sys.path` mutation from the test suite and switched CI to package-installed test execution.
+- Added foundation verification coverage:
+  - `tests/test_settings.py`
+  - `tests/test_bootstrap.py`
+  - Exa client fallback-to-settings coverage in `tests/test_exa_client.py`
+- Added runtime and repo-boundary documentation:
+  - `docs/FOUNDATION.md`
+  - placeholder `apps/`, `workers/`, and `packages/` directories
+- Verification:
+  - `.venv\Scripts\python -m war_room`
+  - `.venv\Scripts\python -m pytest -q` -> `115 passed`
+
+## Session 19 - PR #28 CI Fix
+Date: 2026-03-06
+Status: Complete
+
+- Inspected failing GitHub Actions runs for PR `#28`.
+- Identified one root cause across all three failing checks:
+  - editable install step failed in Actions with `BackendUnavailable: Cannot import 'setuptools.build_meta'`
+- Updated both workflows to install `setuptools>=69` before `pip install -e . --no-build-isolation`:
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/exa-compat-matrix.yml`
+- Verification:
+  - `.venv\Scripts\python -m pytest -q` -> `115 passed`

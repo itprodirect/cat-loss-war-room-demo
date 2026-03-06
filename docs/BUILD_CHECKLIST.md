@@ -10,6 +10,13 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] exa-py compatibility matrix live
 - [x] Adapter kwargs smoke-contract tests added
 
+## V2 Foundation (in progress)
+
+- [ ] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
+- [ ] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system
+- [ ] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema
+- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard
+
 ## In Progress / Next
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
@@ -33,3 +40,5 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [ ] [#17](https://github.com/itprodirect/cat-loss-war-room-demo/issues/17) observability and cost controls
 - [ ] [#18](https://github.com/itprodirect/cat-loss-war-room-demo/issues/18) security baseline
 - [ ] [#19](https://github.com/itprodirect/cat-loss-war-room-demo/issues/19) pilot validation
+- [ ] [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25) AI guardrails and eval harness
+- [ ] [#26](https://github.com/itprodirect/cat-loss-war-room-demo/issues/26) human review workflow

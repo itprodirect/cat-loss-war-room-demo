@@ -7,12 +7,9 @@ No network calls — tests the committed fixture data.
 """
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT / "cache_samples" / "milton_citizens_pinellas"

@@ -1,10 +1,7 @@
 ﻿"""Tests for caselaw_module - no network calls."""
 
-import sys
 import tempfile
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
 from war_room.query_plan import CaseIntake

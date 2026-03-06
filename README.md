@@ -16,12 +16,14 @@ cd cat-loss-war-room-demo
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pip install -e . --no-deps --no-build-isolation
 
 # Copy env template
 cp .env.example .env
 # Edit .env to add your EXA_API_KEY (optional — demo runs from cache)
 
 # Run tests
+python -m war_room
 pytest -q
 
 # Open the notebook
@@ -54,6 +56,7 @@ The notebook must run against the project venv. Register it once:
 
 ```bash
 source .venv/bin/activate
+pip install -e . --no-deps --no-build-isolation
 python -m pip install ipykernel
 python -m ipykernel install --user --name cat-loss-war-room-demo --display-name "cat-loss-war-room-demo (.venv)"
 ```
@@ -73,16 +76,18 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**V2 kickoff underway:** Core demo pipeline is stable, `109` tests are passing, and CI now enforces:
+**V2 product foundation landed:** Core demo pipeline is stable, `115` tests are passing, and CI now enforces:
 - Fresh environment install + full test run
+- Editable package bootstrap validation
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
 
-Issues `#4` and `#5` are complete, and issue `#6` is underway with slices 1-3 (typed intake/query, module pack adapters, and citation/export contracts).
+Issues `#4`, `#5`, and `#22` are complete, and issue `#6` is underway with slices 1-3 (typed intake/query, module pack adapters, and citation/export contracts).
 
 ## Roadmap (Simple)
 
 - Read the plain-language roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
 - See issue-by-issue mapping: [docs/V2_ISSUE_MAP.md](docs/V2_ISSUE_MAP.md)
+- See the current bootstrap and environment rules: [docs/FOUNDATION.md](docs/FOUNDATION.md)
 
 ## Live Eval Lane
 

@@ -1,5 +1,6 @@
 """CAT-Loss War Room - AI-powered catastrophic loss litigation research."""
 
+from war_room.bootstrap import BootstrapContext, bootstrap_runtime, discover_repo_root
 from war_room.cache_io import cached_call
 from war_room.models import (
     CaseLawPack,
@@ -28,10 +29,17 @@ from war_room.query_plan import (
     load_case_intake,
     validate_case_intake_payload,
 )
+from war_room.settings import FeatureFlags, RuntimeEnvironment, WarRoomSettings, load_settings
 from war_room.source_scoring import score_url
 
 __all__ = [
+    "BootstrapContext",
+    "bootstrap_runtime",
     "cached_call",
+    "discover_repo_root",
+    "FeatureFlags",
+    "load_settings",
+    "RuntimeEnvironment",
     "score_url",
     "CASE_INTAKE_REQUIRED_FIELDS",
     "CASE_INTAKE_OPTIONAL_FIELDS",
@@ -56,4 +64,5 @@ __all__ = [
     "caselaw_pack_to_payload",
     "citation_verify_pack_to_payload",
     "memo_render_input_from_parts",
+    "WarRoomSettings",
 ]

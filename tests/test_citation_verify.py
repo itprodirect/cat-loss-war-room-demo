@@ -1,11 +1,8 @@
 """Tests for citation_verify module - no network calls."""
 
-import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.citation_verify import MAX_CHECKS, _do_check, spot_check_citations
 from war_room.exa_client import BudgetExhausted

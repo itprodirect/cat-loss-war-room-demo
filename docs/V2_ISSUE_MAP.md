@@ -14,7 +14,7 @@ This file maps V2 phases to GitHub issues so planning and execution stay aligned
 
 | Focus | Issue | Notes |
 |---|---|---|
-| Product foundation and repo shape | [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) | App boundaries, envs, local dev, fixture lane |
+| Product foundation and repo shape | [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) | Completed Mar 6, 2026: packaging/bootstrap landed; app boundaries, envs, local dev, fixture lane documented |
 | Workflow IA and design system | [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) | Defines the user journey before UI implementation |
 | Canonical evidence graph and audit schema | [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) | Links runs, evidence, claims, review events, and exports |
 | Quality rubric and release scorecard | [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) | Shared readiness language across engineering, product, and pilot work |
