@@ -1,11 +1,7 @@
 """Smoke contract tests for Exa adapter kwargs forwarding."""
 
 import re
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.exa_client import ExaClient
 

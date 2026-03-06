@@ -1,13 +1,11 @@
 """Tests for exa_client module — no network calls."""
 
-import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-
-from war_room.exa_client import ExaClient, BudgetExhausted, _build_contents_options
 import pytest
+
+from war_room.exa_client import BudgetExhausted, ExaClient, _build_contents_options
 
 
 def _mock_result(url="https://example.com", title="Test", text="body"):
@@ -119,3 +117,16 @@ def test_contents_payload_respects_max_chars(MockExa):
 def test_build_contents_options_shape():
     payload = _build_contents_options(2048)
     assert payload["text"]["max_characters"] == 2048
+
+
+@patch("war_room.exa_client.load_settings")
+@patch("war_room.exa_client.discover_repo_root")
+@patch("war_room.exa_client.Exa")
+def test_exa_client_falls_back_to_shared_settings(MockExa, mock_discover_root, mock_load_settings):
+    mock_discover_root.return_value = Path.cwd()
+    mock_load_settings.return_value = MagicMock(exa_api_key_value="settings-key")
+
+    client = ExaClient()
+
+    MockExa.assert_called_once_with("settings-key")
+    assert client.budget_remaining == client.max_search_calls

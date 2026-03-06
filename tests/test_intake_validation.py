@@ -1,12 +1,9 @@
 """Tests for strict case intake ingestion and schema validation."""
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.query_plan import (
     CASE_INTAKE_OPTIONAL_FIELDS,

@@ -7,18 +7,52 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 109 tests are passing.
-- CI has a fresh-environment gate plus `exa-py` compatibility matrix.
+- 115 tests are passing.
+- CI has a fresh-environment gate, editable-package install, and `exa-py` compatibility matrix.
 - A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.
+- Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete.
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-3 merged in PR #21).
+
+## Active Priority Rank
+
+This is the current best-to-worst order for active work on the current build.
+Issue [#3](https://github.com/itprodirect/cat-loss-war-room-demo/issues/3) remains the umbrella epic and is not ranked with execution tickets.
+
+1. [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) Define attorney workflow, IA, and design system
+2. [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) Define canonical evidence graph and audit schema
+3. [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Define quality rubric and release scorecard
+4. [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts
+5. [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests
+6. [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) Multi-jurisdiction fixture suite + snapshots
+7. [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) Expand CI quality gates
+8. [#10](https://github.com/itprodirect/cat-loss-war-room-demo/issues/10) API orchestrator with graceful degradation
+9. [#11](https://github.com/itprodirect/cat-loss-war-room-demo/issues/11) Guided web intake + run-status UX
+10. [#12](https://github.com/itprodirect/cat-loss-war-room-demo/issues/12) Evidence normalization + provenance implementation
+11. [#13](https://github.com/itprodirect/cat-loss-war-room-demo/issues/13) Caselaw quality v2
+12. [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25) AI guardrails + eval harness
+13. [#26](https://github.com/itprodirect/cat-loss-war-room-demo/issues/26) Human review workflow
+14. [#14](https://github.com/itprodirect/cat-loss-war-room-demo/issues/14) Citation verification hardening
+15. [#15](https://github.com/itprodirect/cat-loss-war-room-demo/issues/15) Memo workspace v2
+16. [#17](https://github.com/itprodirect/cat-loss-war-room-demo/issues/17) Observability + cost controls
+17. [#18](https://github.com/itprodirect/cat-loss-war-room-demo/issues/18) Security baseline
+18. [#19](https://github.com/itprodirect/cat-loss-war-room-demo/issues/19) Attorney pilot validation
+19. [#16](https://github.com/itprodirect/cat-loss-war-room-demo/issues/16) Firm memory v1
+
+## Triage Notes
+
+- No safe issue closures were identified in this pass. The backlog is mostly coherent.
+- The main cleanup is scope clarity, not deletion:
+  - `#6` should track only the remaining typed-contract work.
+  - `#9` should track CI expansion beyond the gates already in place.
+  - `#11` should explicitly implement the workflow defined in `#23`.
+  - `#12` should explicitly implement against the canonical schema defined in `#24`.
 
 ## Now (next 2-3 weeks)
 
 Goal: lock the shape of V2 and finish the technical foundation.
 
-- [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) Stand up V2 product foundation
 - [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) Define attorney workflow, IA, and design system
 - [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) Define canonical evidence graph and audit schema
 - [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Define quality rubric and release scorecard

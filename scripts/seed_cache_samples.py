@@ -15,16 +15,9 @@ Do NOT run this in CI — it's a manual, one-time step.
 
 import json
 import shutil
-import sys
 from pathlib import Path
 
-# Add src to path
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "src"))
-
-from dotenv import load_dotenv
-load_dotenv(ROOT / ".env")
-
+from war_room.bootstrap import bootstrap_runtime
 from war_room.exa_client import ExaClient
 from war_room.query_plan import CaseIntake, generate_query_plan
 from war_room.weather_module import build_weather_brief
@@ -57,16 +50,18 @@ def default_intake() -> CaseIntake:
 
 
 def main():
+    context = bootstrap_runtime(start_path=Path(__file__))
+    settings = context.settings
     intake = default_intake()
     case_key = "milton_citizens_pinellas"
-    cache_dir = ROOT / "cache"
-    samples_dir = ROOT / "cache_samples"
+    cache_dir = settings.cache_dir
+    samples_dir = settings.cache_samples_dir
 
     print(f"Seeding cache_samples for: {intake.summary()}")
     print(f"Output dir: {samples_dir}")
     print()
 
-    client = ExaClient(max_search_calls=40)
+    client = ExaClient(api_key=settings.exa_api_key_value, max_search_calls=40)
     print(f"Exa client initialized. Budget: {client.max_search_calls} calls")
     print()
 

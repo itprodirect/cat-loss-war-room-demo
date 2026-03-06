@@ -1,10 +1,7 @@
 ﻿"""Tests for weather_module - no network calls, uses mock/cache."""
 
-import sys
 import tempfile
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.query_plan import CaseIntake
 from war_room.weather_module import _assemble_brief, _extract_metrics, build_weather_brief

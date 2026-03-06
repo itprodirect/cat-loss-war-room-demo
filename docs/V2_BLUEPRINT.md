@@ -80,9 +80,9 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 - Validation and orchestration logic are duplicated.
   - `CaseIntake` rules exist in both `models.py` and `query_plan.py`.
   - Each module regenerates its own query slice instead of operating from one canonical run plan.
-- Packaging and runtime ergonomics are still prototype-grade.
-  - Tests and scripts repeatedly mutate `sys.path`.
-  - The notebook depends on path assumptions that are fine in demos and fragile elsewhere.
+- Packaging and runtime ergonomics are improving but still early.
+  - The editable package/bootstrap layer is now in place.
+  - The broader V2 repo split (`apps/`, `workers/`, `packages/`) is still planned rather than implemented.
 - CI is still shallow for a V2 target.
   - Today it is essentially `pytest -q` plus an `exa-py` compatibility matrix.
 
@@ -458,6 +458,6 @@ Exit criteria:
 ## 13) Immediate Next Actions
 
 1. Finish the remaining typed-domain work in [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) with explicit schema-versioning rules.
-2. Start [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22), [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) before major V2 implementation.
+2. Use completed [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) as the bootstrap baseline, then push [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) before major V2 implementation.
 3. Use the current notebook plus fixture lane as the regression harness while API and web surfaces come online.
 4. Only introduce AI into V2 through the guardrailed path defined in [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25).

@@ -1,10 +1,7 @@
 """Tests for export_md module — no network calls."""
 
-import sys
 import tempfile
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from war_room.export_md import render_markdown_memo, write_markdown
 from war_room.query_plan import CaseIntake, QuerySpec

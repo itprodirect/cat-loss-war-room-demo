@@ -8,9 +8,13 @@ from __future__ import annotations
 
 import os
 import time
+from pathlib import Path
 from typing import Any
 
 from exa_py import Exa
+
+from war_room.bootstrap import discover_repo_root
+from war_room.settings import load_settings
 
 
 class BudgetExhausted(Exception):
@@ -25,7 +29,7 @@ class ExaClient:
         api_key: str | None = None,
         max_search_calls: int = 30,
     ):
-        self._api_key = api_key or os.getenv("EXA_API_KEY", "")
+        self._api_key = api_key or os.getenv("EXA_API_KEY", "") or _load_api_key_from_settings()
         if not self._api_key:
             raise ValueError("EXA_API_KEY is required (pass it or set in env)")
         self._exa = Exa(self._api_key)
@@ -129,3 +133,13 @@ def _build_contents_options(max_chars: int) -> dict[str, Any]:
         return ContentsOptions(text={"max_characters": max_chars})
     except Exception:
         return {"text": {"max_characters": max_chars}}
+
+
+def _load_api_key_from_settings() -> str:
+    """Attempt to resolve the API key from the shared settings loader."""
+    try:
+        repo_root = discover_repo_root(Path.cwd())
+        settings = load_settings(repo_root=repo_root)
+        return settings.exa_api_key_value
+    except Exception:
+        return ""
