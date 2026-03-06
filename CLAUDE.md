@@ -31,6 +31,7 @@ src/war_room/       # All Python logic lives here
   exa_client.py     # Exa search wrapper (retry, budget guard)
   cache_io.py       # Cache-first data access (cache_samples -> cache -> live)
   source_scoring.py # Deterministic URL credibility scoring
+  models.py         # Pydantic typed domain models and adapter helpers
   query_plan.py     # CaseIntake + QuerySpec + generate_query_plan()
   weather_module.py # Weather data gathering (gov-first)
   carrier_module.py # Carrier playbook intel + rebuttal angles

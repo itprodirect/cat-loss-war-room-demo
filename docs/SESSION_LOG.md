@@ -53,12 +53,14 @@ Status: Complete
 - Merged to `main`.
 
 ## Current Snapshot
-Date: 2026-03-04
+Date: 2026-03-06
 
-- Branch baseline: `main` contains PR #20 changes.
-- Test status: 81 passing.
+- Branch baseline: `main` contains PR #20 and PR #21 changes.
+- Test status: 109 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Next priority: issue #5 (schema alignment), then #6 (typed contracts).
+- Issues #4 and #5 complete and closed. Issue #6 slices 1-3 merged.
+- V2 foundation issues #22-#27 created and documented.
+- Next priority: finish #6 remaining scope, begin #22, #23, #24, #27.
 
 ## Session 7 - Documentation Refresh and Roadmap Simplification
 Date: 2026-03-04
