@@ -250,3 +250,16 @@ Status: Complete
 - Verification:
   - `.venv\Scripts\python -m war_room`
   - `.venv\Scripts\python -m pytest -q` -> `115 passed`
+
+## Session 19 - PR #28 CI Fix
+Date: 2026-03-06
+Status: Complete
+
+- Inspected failing GitHub Actions runs for PR `#28`.
+- Identified one root cause across all three failing checks:
+  - editable install step failed in Actions with `BackendUnavailable: Cannot import 'setuptools.build_meta'`
+- Updated both workflows to install `setuptools>=69` before `pip install -e . --no-build-isolation`:
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/exa-compat-matrix.yml`
+- Verification:
+  - `.venv\Scripts\python -m pytest -q` -> `115 passed`
