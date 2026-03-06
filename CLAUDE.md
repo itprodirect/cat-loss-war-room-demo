@@ -1,4 +1,4 @@
-# CAT-Loss War Room — Claude Code Project Conventions
+# CAT-Loss War Room - Claude Code Project Conventions
 
 ## Primary objective
 Attorney-grade demo readiness and approachability. Every change should make the demo more reliable, the code more understandable, and the documentation more useful for both agents and non-technical professionals.
@@ -41,14 +41,14 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (81 tests, no network)
+tests/              # pytest test suite (109 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 ```
 
 ## Workflow rules
 - **Small diffs.** One concern per commit. Keep changes reviewable.
-- **Run `pytest -q` before committing.** All 81 tests must pass.
+- **Run `pytest -q` before committing.** All tests must pass.
 - **Keep notebooks thin.** Business logic goes in `src/war_room/`, notebooks just call it.
 - **Cache-first.** Every external call goes through `cached_call()`. Demo must work offline.
 - **No secrets in code.** `.env` is gitignored. Use `.env.example` for the template.
@@ -58,12 +58,12 @@ docs/               # Project documentation
 
 ## How to decide what to change
 Prioritize in this order:
-1. **Partner trust** — Does this make the demo more credible to an attorney?
-2. **Usability** — Does this make the tool easier to run and understand?
-3. **Reliability** — Does this reduce the chance of demo failure?
-4. **Extensibility** — Does this make future work easier? (lowest priority)
+1. **Partner trust** - Does this make the demo more credible to an attorney?
+2. **Usability** - Does this make the tool easier to run and understand?
+3. **Reliability** - Does this reduce the chance of demo failure?
+4. **Extensibility** - Does this make future work easier? (lowest priority)
 
-## Boundaries — what Claude Code should NOT do
+## Boundaries - what Claude Code should NOT do
 - Never commit `.env` or any file containing API keys
 - Never make live Exa API calls in tests (use mocks/cache)
 - Never claim outputs are verified legal advice
@@ -71,14 +71,14 @@ Prioritize in this order:
 - Never install packages not in requirements.txt without asking
 
 ## Branch naming
-- `chore/` — repo setup, docs, config
-- `feat/` — new functionality
-- `fix/` — bug fixes
+- `chore/` - repo setup, docs, config
+- `feat/` - new functionality
+- `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, v2 kickoff underway. Cells 0–7 stable, CI quality gates live, 81 tests passing.
+v0-demo shipped, v2 kickoff expanded into a deeper foundation-planning phase. Cells 0-7 stable, CI quality gates live, 109 tests passing.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: issue #5 (intake schema alignment) and issue #6 (typed domain contracts).
+Next priority: finish the remaining scope in issue #6 while starting the new V2 foundation issues #22, #23, #24, and #27 before major product implementation.

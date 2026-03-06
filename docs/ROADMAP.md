@@ -1,34 +1,42 @@
 # Roadmap (Simple, Current)
 
-Last updated: March 4, 2026
+Last updated: March 6, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 81 tests are passing.
+- 109 tests are passing.
 - CI has a fresh-environment gate plus `exa-py` compatibility matrix.
-- Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is done.
+- A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
+- Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
+- Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.
+- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-3 merged in PR #21).
 
 ## Now (next 2-3 weeks)
 
-Goal: remove schema ambiguity, strengthen contracts, and harden test quality.
+Goal: lock the shape of V2 and finish the technical foundation.
 
-- [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) Align eval intake schema with `CaseIntake`
-- [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Introduce typed domain contracts
+- [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) Stand up V2 product foundation
+- [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) Define attorney workflow, IA, and design system
+- [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) Define canonical evidence graph and audit schema
+- [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Define quality rubric and release scorecard
+- [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts
 - [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests
 - [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) Multi-jurisdiction fixture suite + snapshots
 - [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) Expand CI quality gates
 
 ## Next (30-60 days)
 
-Goal: move from notebook orchestration to product-grade flow.
+Goal: build the first true product workflow around the research engine.
 
 - [#10](https://github.com/itprodirect/cat-loss-war-room-demo/issues/10) API orchestrator with graceful degradation
 - [#11](https://github.com/itprodirect/cat-loss-war-room-demo/issues/11) Guided web intake + run status UX
 - [#12](https://github.com/itprodirect/cat-loss-war-room-demo/issues/12) Evidence normalization + provenance
 - [#13](https://github.com/itprodirect/cat-loss-war-room-demo/issues/13) Caselaw quality v2
+- [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25) AI guardrails + eval harness
+- [#26](https://github.com/itprodirect/cat-loss-war-room-demo/issues/26) Human review workflow
 
 ## Then (60-90 days)
 
@@ -47,6 +55,7 @@ Goal: trust, polish, and real-world adoption readiness.
 - Trust: every key statement in output can be traced to sources.
 - Usability: non-technical users can run intake-to-memo with minimal guidance.
 - Quality: fewer noisy results, better case law precision, clearer citation confidence.
+- Readiness: releases are scored against the same benchmark rubric used in pilot validation.
 
 ## Notes
 

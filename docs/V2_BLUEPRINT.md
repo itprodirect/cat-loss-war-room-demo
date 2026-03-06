@@ -1,289 +1,463 @@
-﻿# CAT-Loss War Room V2 Blueprint
+# CAT-Loss War Room V2 Blueprint
 
-## 1) Deep-Dive Assessment (Current Repo)
+## 1) Executive Read
+
+The repo is a good v0 demo and a weak v1 product.
+
+That is not a criticism of the first build. It is the right result for a fast prototype:
+
+- the core workflow is real,
+- the legal framing is disciplined,
+- the cache-first demo lane works,
+- and the codebase is small enough to reason about.
+
+What it does **not** yet prove is that attorneys or paralegals can use it alone, that evidence quality is strong across many fact patterns, or that the system can be operated like a product instead of a narrated notebook.
+
+V2 should preserve the best parts of v0 and rebuild the rest around:
+
+- a product-grade web experience,
+- a modular-monolith backend,
+- a canonical evidence and provenance model,
+- explicit review workflow,
+- and measured AI usage only where it increases quality.
+
+Do **not** rebuild this as a distributed microservice maze. The right V2 is a disciplined product platform, not a prematurely complex systems demo.
+
+## 2) Current-State Scorecard
+
+| Dimension | Verdict | Why |
+|---|---|---|
+| Demo reliability | Strong | Offline cache lane, committed fixtures, and `109` passing tests make the demo dependable. |
+| End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
+| Evidence quality | Mixed | Good source gathering intent, but normalization and extraction are still brittle. |
+| Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
+| Architecture | Good prototype | Modules are understandable, but orchestration, contracts, storage, and runtime boundaries are still early. |
+| Security and operations | Early | Repo hygiene is fine; product controls, auditability, and observability are mostly roadmap work. |
+
+## 3) Deep-Dive Assessment
 
 ### What Works Well
 
-- Cache-first demo architecture is pragmatic and reliable for offline demos.
-  - `cached_call()` uses `cache_samples -> cache -> live` in one place: `src/war_room/cache_io.py`.
-- Clear legal-safety posture is consistently documented and exported.
-  - Disclaimers appear in docs and memo renderer: `docs/SAFETY_GUARDRAILS.md`, `src/war_room/export_md.py`.
-- Module separation is understandable.
-  - Query planning, weather, carrier, caselaw, citation checks are split into focused files under `src/war_room/`.
-- Test intent is good for a prototype.
-  - Tests target core behavior and avoid network calls by default.
+- The product thesis is good.
+  - Weather corroboration + carrier intelligence + case law + memo export is a compelling legal workflow.
+- Cache-first design is the best decision in the repo.
+  - `cache_samples -> cache -> live` makes the demo reliable and preserves an offline regression lane.
+- Legal safety posture is unusually clear for an early prototype.
+  - Disclaimers, citation warnings, and source badges are consistent.
+- Module boundaries are understandable.
+  - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
+- Test coverage is respectable for a prototype.
+  - `109` tests is enough to trust refactors more than usual at this stage.
+- Documentation is better than the average internal prototype.
+  - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 
-### What Is OK (But Limits Scale)
+### What Is OK, But Will Limit V2 If Left Alone
 
-- Notebook-first UX is acceptable for internal demos but weak for broad attorney adoption.
-  - Flow is linear and reproducible, but not guided for non-technical users.
-- Deterministic source scoring improves explainability.
-  - Useful baseline, but domain dictionaries will age and drift without governance.
-- Query generation is fast and simple.
-  - Good for startup velocity, but lacks jurisdiction-aware precision, quality scoring, and explainability logs.
+- Typed contracts are landing, but they are not yet the real internal architecture.
+  - Pydantic currently validates payloads, but the core still leans on dict-shaped module outputs.
+- Deterministic source scoring is the right default.
+  - It is explainable, but it needs governance and more nuanced evidence handling around edge domains.
+- The query-plan approach is directionally right.
+  - It is still static, heuristic-heavy, and not yet editable, auditable, or quality-scored.
+- The notebook is fine for guided demos.
+  - It is a demo surface, not a product surface.
 
-### What Is Bad / High Risk
+### What Is Bad Or High-Risk
 
-- Dependency compatibility was a high risk and is now mitigated.
-  - Exa compatibility hardening shipped in PR #20 (issue #4 closed).
-  - Version-safe contents options + pinned dependencies + CI matrix are now in place.
-- Live-eval intake schema is inconsistent.
-  - `eval/README.md` says intake JSON should match `CaseIntake`.
-  - Keep `eval/intakes/_template_case_intake.json` aligned with `CaseIntake` fields.
-- Caselaw quality still allows non-case content into issue packs.
-  - Citation-like text in commentary pages can pass current filter logic.
-- Notebook runtime can degrade badly outside happy path.
-  - `client = None` fallback is set in notebook cells, but module functions still call `client.search(...)` when cache misses.
-- Extraction quality is brittle.
-  - Metrics and case metadata are regex-first and not confidence-scored.
-  - Can output noisy artifacts from scraped content.
+- The UI/UX is effectively nonexistent for real users.
+  - The current "app" requires Python setup, Jupyter, kernel selection, and a run-cell mental model.
+  - That is acceptable for engineers and demos, not for attorneys.
+- The canonical data model stops too early.
+  - The system knows about module packs, but not yet about evidence clusters, memo claims, review events, or audit links.
+- Evidence normalization is too weak for trust-critical output.
+  - Duplicate sources, generic regulatory pages, and noisy snippets still leak into output.
+- Legal extraction is still brittle.
+  - Case names, courts, years, and citations are regex-first and can be noisy or incomplete.
+- Current sample output still shows relevance problems.
+  - Weather extracts storm-wide metrics without strong county anchoring.
+  - Carrier results include generic `floir.com` pages that are structurally valid but not very useful.
+  - Case-law output still includes commentary-like entries such as "Wind vs. Water Damage: What Homeowners Must Know".
+- Validation and orchestration logic are duplicated.
+  - `CaseIntake` rules exist in both `models.py` and `query_plan.py`.
+  - Each module regenerates its own query slice instead of operating from one canonical run plan.
+- Packaging and runtime ergonomics are still prototype-grade.
+  - Tests and scripts repeatedly mutate `sys.path`.
+  - The notebook depends on path assumptions that are fine in demos and fragile elsewhere.
+- CI is still shallow for a V2 target.
+  - Today it is essentially `pytest -q` plus an `exa-py` compatibility matrix.
 
-### Unknowns (Need Measured Validation)
+### What Is Unknown
 
-- Real quality across multiple jurisdictions and perils.
-- True precision/recall for caselaw relevance.
-- Citation verification reliability against official court sources at scale.
-- End-user usability for attorneys/paralegals without technical support.
-- Live performance and API cost under repeated real-world use.
+- Real usefulness across multiple jurisdictions, perils, and carriers.
+- Precision and recall for case-law retrieval.
+- How much AI improves extraction and drafting versus how much noise it introduces.
+- How long it takes a new legal user to complete intake-to-memo without help.
+- Live cost and latency under repeated use.
+- Which outputs attorneys actually keep, edit, or discard.
 
-## 2) V2 Product Vision
+## 4) If Starting From Scratch Today
 
-### Product Goal
+### Keep
 
-Deliver a dependable legal research workbench for catastrophic-loss litigation that is:
+- The legal problem framing.
+- Cache-first fixtures and offline demo lane.
+- The module decomposition as a learning scaffold.
+- Deterministic source-tiering as a policy layer.
+- The safety posture and disclaimer language.
+- The existing tests and sample outputs as regression assets.
 
-- trusted by attorneys,
-- fast enough for live strategy sessions,
-- auditable for every claim and citation,
-- and simple for non-technical legal teams.
+### Kill
 
-### User Outcomes
+- Jupyter as the primary user interface.
+- Dict-shaped payloads as the long-term internal contract.
+- Provider SDK types leaking across module boundaries.
+- Regex-only extraction as the main trust mechanism.
+- "One-shot memo generation" as the core experience.
 
-- Partner can trust the output structure and source traceability in minutes.
-- Paralegal can produce first-pass research packages in less than 15 minutes.
-- Litigation team can compare multiple strategy angles with explicit evidence confidence.
+### Rewrite
 
-## 3) UX / UI Direction (From Notebook to Product)
+- The runtime architecture.
+- The canonical domain model.
+- Evidence normalization and provenance tracking.
+- Case-law resolution and citation handling.
+- Export and memo workflow.
+- User experience from intake through review.
+
+### Delay
+
+- Multi-tenant SaaS complexity.
+- Fancy autonomous-agent behavior.
+- Firm memory as a major feature before provenance and review are solid.
+- Vector search as a default storage strategy.
+  - Start with explicit relational entities and good retrieval metadata first.
+
+## 5) Product Thesis For V2
+
+### Primary Users
+
+- Partner
+  - Wants a fast, trustworthy first-pass research package and clear uncertainty markers.
+- Associate
+  - Wants issue-level evidence, citations, and a strong drafting starting point.
+- Paralegal
+  - Wants guided intake, progress visibility, and a repeatable way to gather material fast.
+- Operator or litigation support lead
+  - Wants reliability, audit trails, benchmark quality, and release confidence.
+
+### V2 Outcome Targets
+
+- A new legal user can complete intake and launch a run without engineering help.
+- Every important statement in the memo can be traced back to evidence.
+- Partial failures do not collapse the workflow.
+- Citation ambiguity is visible, reviewable, and exportable.
+- The system is measurably better than the notebook on speed, trust, and clarity.
+
+## 6) UX Verdict And Experience Blueprint
 
 ### Current UX Verdict
 
-- Helpful for technical demos.
-- Not sufficient for daily legal operations.
-- Discoverability is low, error handling is implicit, and outputs are noisy.
+Helpful as a narrated demo.
 
-### V2 UX Model
+Nearly nonexistent as a standalone product.
 
-- Web app with guided, step-based workflow:
-  1. Intake wizard (jurisdiction, peril, carrier, posture, facts).
-  2. Research plan preview and editable scope.
-  3. Live progress with module status and budget/time indicators.
-  4. Evidence board with source badges, excerpt quality, and exclusions.
-  5. Case law workspace with issue clusters and citation confidence.
-  6. Memo builder with edit/approve/export.
+The notebook explains the flow if an engineer is driving. It does not give non-technical users:
+
+- safe input handling,
+- clear progress,
+- error recovery,
+- evidence review,
+- or a human approval workflow.
+
+### V2 Workflow
+
+1. **Intake**
+   - Guided form with validation, redaction cues, defaults, and matter templates.
+2. **Research Plan**
+   - Preview planned modules, domains, questions, and estimated cost/time before run.
+3. **Run Timeline**
+   - Show module-by-module progress, retries, partial failures, and budget use.
+4. **Evidence Board**
+   - Deduplicated evidence cards with source tier, provenance, confidence, and exclusions.
+5. **Issue Workspace**
+   - Cluster facts and cases by legal issue with clear "why this matters" summaries.
+6. **Memo Composer**
+   - Section-based drafting with evidence links and review-required flags.
+7. **Export And Audit Bundle**
+   - Clean memo export plus appendix, evidence index, and run audit snapshot.
 
 ### UX Principles
 
-- Make trust visible: every assertion linked to evidence.
-- Make uncertainty explicit: confidence + why + next action.
-- Make failure graceful: partial output is better than crash.
-- Make legal review easy: copyable citations, clear provenance, clean summaries.
+- Show evidence before prose.
+- Make uncertainty visible in the main flow, not hidden in footnotes.
+- Prefer partial output over hard failure.
+- Use review-required states instead of pretending low-confidence output is complete.
+- Keep the interface calm, dense, and serious.
+  - This should feel like a premium legal workbench, not a startup analytics dashboard.
 
-## 4) V2 Architecture (Ground-Up Rebuild)
+### Visual Direction
 
-### 4.1 High-Level Architecture
+- Editorial rather than "dashboard-first".
+- High-contrast, document-like layout with strong information hierarchy.
+- Confidence should use both color and text.
+  - Never rely on badge color alone.
+- Motion should be minimal and purposeful.
+  - Progress and transitions, not decorative animation.
+- Typography should support long-form reading and evidence comparison.
 
-- `apps/web`: user-facing UI.
-- `apps/api`: orchestration API and session state.
-- `services/retrieval`: provider adapters (Exa now, pluggable later).
-- `services/enrichment`: extraction, normalization, dedupe, scoring.
-- `services/reasoning`: issue clustering, argument synthesis, rebuttal scaffolds.
-- `services/export`: markdown/docx/pdf generation.
-- `services/memory`: firm memory store (versioned, auditable).
-- `shared/domain`: typed domain models and validation rules.
+## 7) Recommended V2 Architecture
 
-### 4.2 Domain-First Data Model
+### 7.1 Build A Modular Monolith First
 
-Use strongly typed models (Pydantic) for:
+Do not begin with independent services for every module.
+
+Recommended repo shape:
+
+```text
+apps/
+  web/            # end-user UI
+  api/            # HTTP API, auth, run state, orchestration endpoints
+workers/
+  research/       # background execution of runs
+packages/
+  domain/         # typed models, schemas, policy rules
+  retrieval/      # provider interfaces and adapters
+  pipeline/       # normalization, analysis, drafting orchestration
+  export/         # markdown/docx/pdf generation
+  evals/          # benchmark fixtures, scorecards, release gates
+```
+
+One backend codebase, one worker runtime, one frontend. Separate later only when operational data proves the need.
+
+### 7.2 Runtime Model
+
+- **Web app**
+  - Intake, run status, evidence workspace, memo composer, export history.
+- **API**
+  - Owns run creation, read models, permissions, and orchestration commands.
+- **Worker**
+  - Executes retrieval, normalization, legal analysis, citation checks, and draft assembly.
+- **Relational store**
+  - Canonical run, evidence, issue, memo, review, and audit entities.
+- **Object store**
+  - Raw retrieval payloads, fetched content, PDFs, rendered exports.
+- **Queue**
+  - Background execution and retries.
+- **Fixture lane**
+  - Offline sample bundles remain first-class for demo and regression use.
+
+### 7.3 Canonical Domain Model
+
+Core V2 entities should include:
 
 - `CaseIntake`
-- `QueryPlan`
+- `ResearchPlan`
+- `Run`
+- `RunEvent`
+- `RetrievalTask`
 - `EvidenceItem`
+- `EvidenceCluster`
 - `LegalIssue`
-- `CaseCitation`
+- `CaseCandidate`
 - `CitationCheck`
-- `CarrierSignal`
-- `WeatherFact`
-- `ResearchMemo`
-- `RunAuditLog`
+- `MemoSection`
+- `MemoClaim`
+- `ReviewEvent`
+- `ExportArtifact`
 
-All module boundaries consume/return typed objects, not free-form dicts.
+The key missing V0 idea is this:
 
-### 4.3 Pipeline Design
+> The memo is not the primary object. The memo is a view over evidence, issues, claims, and review state.
 
-1. Intake validation + normalization.
-2. Query planning with explicit rationale per query.
-3. Retrieval with retry, throttling, budget tracking, and provider contracts.
-4. Evidence normalization and deduplication.
-5. Module analysis (weather/carrier/caselaw).
-6. Citation verification + conflict detection.
-7. Memo assembly with provenance map.
-8. Export + immutable run snapshot.
+That is the architecture shift that makes V2 trustworthy.
 
-### 4.4 AI Integration (Only Where It Adds Real Value)
+### 7.4 Pipeline Stages
 
-Use AI for:
+1. Intake validation and PII sanitization.
+2. Research-plan generation with explicit rationale.
+3. Retrieval through provider abstraction.
+4. Evidence normalization, dedupe, and provenance attachment.
+5. Module analysis:
+   - weather,
+   - carrier,
+   - case law,
+   - citation resolution.
+6. Evidence-linked drafting and summary generation.
+7. Human review and approval flow.
+8. Export and immutable audit snapshot.
 
-- extracting structured facts from noisy text,
-- summarizing long evidence into clean legal notes,
-- drafting argument variants from verified evidence.
+### 7.5 Storage Strategy
 
-Do not use AI for:
+- Use relational storage for canonical state and auditability.
+- Store raw retrieval content separately from normalized evidence.
+- Version schemas and fixture outputs explicitly.
+- Preserve a deterministic fixture lane for smoke tests and demos.
+- Do not default to vector infrastructure until there is a measured need.
+  - V2 should win on provenance and workflow before semantic memory becomes a platform concern.
 
-- source credibility tiering (keep deterministic policy + rules),
-- citation truth decisions without source evidence,
-- legal conclusions presented as advice.
+### 7.6 Operational Boundaries
 
-Guardrails:
+- Every run has explicit state transitions:
+  - `queued`, `running`, `partial_success`, `failed`, `completed`, `cancelled`.
+- Every stage emits structured events with trace IDs.
+- Provider adapters return normalized errors and retry metadata.
+- Cache entries and fixtures carry schema version information.
+- No user-facing claim is emitted without a provenance path.
 
-- Evidence-linked generation only.
-- No final statement without at least one citation anchor.
-- Confidence score and rationale for every generated section.
+## 8) AI Integration Plan
 
-### 4.5 Security / Compliance Baseline
+### Use AI For
 
-- Strict PII redaction layer before external retrieval.
-- Secret handling via environment + vault (no plain-text repo secrets).
-- Immutable audit log for query and citation actions.
-- Role-based access for memo edits and approvals.
-- Data retention policy per environment (demo vs production).
+- Structured extraction from noisy text.
+- Evidence summarization.
+- Drafting alternative argument formulations from already-linked evidence.
+- Highlighting contradictions or missing support in a draft.
 
-### 4.6 Reliability and Observability
+### Do Not Use AI For
 
-- Structured logs for each pipeline stage.
-- Run-level trace IDs.
-- Metrics: latency, failure rates, source-tier distribution, citation-check outcomes, cost/run.
-- Alerting on provider outages and quality regression thresholds.
+- Source credibility tiering.
+- Final citation truth decisions without evidence.
+- Unbounded legal recommendations.
+- Silent rewriting that breaks evidence links.
 
-## 5) Refactor Strategy from V0 to V2
+### Guardrails
 
-### Keep as Learning Assets
+- Every generated statement must reference evidence IDs or citation anchors.
+- Unsupported text is rejected, downgraded, or sent for review.
+- Redaction happens before any external model call.
+- Model/provider choice is environment-configurable and logged.
+- The product must degrade gracefully to extractive or rule-based output if AI gates fail.
 
-- Query decomposition concept.
-- Cache-first design intent.
-- Source tiering policy concept.
-- Memo export structure and legal disclaimers.
+### Product Rule
 
-### Replace / Rebuild
+AI should be an accelerator inside a trustworthy system, not the center of the trust model.
 
-- Rebuild Exa adapter with version-safe client abstraction.
-- Replace dict-based module contracts with typed models.
-- Replace notebook orchestration with API-driven workflow.
-- Replace heuristic-only extraction with hybrid extractor (rules + AI with guardrails).
-- Replace ad hoc docs with architecture decision records tied to release milestones.
+## 9) Security, Compliance, And Trust Baseline
 
-### Migration Path
+- Redact or block sensitive intake details before external retrieval.
+- Treat caches, raw retrieval payloads, and exports as controlled artifacts.
+- Add retention rules for demo, staging, and production environments.
+- Log review events, citation decisions, and export actions.
+- Use role-aware access for editing, approving, and exporting.
+- Keep legal disclaimers and confidence messaging intact across all surfaces.
 
-- Phase A: Introduce typed models and compatibility adapters around existing modules.
-- Phase B: Move orchestration into API service while notebook calls API endpoints.
-- Phase C: Ship web intake and evidence board.
-- Phase D: Retire notebook as primary interface, keep as diagnostic tool only.
+## 10) Quality And Evaluation Strategy
 
-## 6) Testing and Edge-Case Strategy (First-Class Workstream)
+### Test Pyramid
 
-### 6.1 Testing Pyramid
+- Unit:
+  - validation, scoring, parsing, formatting, policy rules.
+- Component:
+  - provider adapters, normalization pipeline, citation resolver.
+- Integration:
+  - intake -> run -> evidence -> memo using fixture bundles.
+- E2E:
+  - guided UI flows and error states.
+- Human evaluation:
+  - attorney and paralegal usability reviews using benchmark matters.
 
-- Unit tests:
-  - Pure functions, model validation, scoring, parsing, query planning.
-- Component tests:
-  - Retrieval adapter contracts, enrichment pipeline, citation verifier.
-- Integration tests:
-  - End-to-end pipeline against fixture bundles across multiple fact patterns.
-- End-to-end UI tests:
-  - Intake-to-export critical flow, error states, retry flows.
-- Non-functional tests:
-  - Performance, load, resilience, and cost-budget tests.
+### V2 Scorecard
 
-### 6.2 Quality Gates
+Measure at least:
 
-- Gate 1: deterministic unit tests must pass.
-- Gate 2: contract tests for external provider adapter must pass.
-- Gate 3: regression snapshot tests for memo sections must pass.
-- Gate 4: scenario suite across 3+ jurisdictions must pass minimum quality thresholds.
-- Gate 5: security checks (secret scanning, dependency checks) must pass.
+- retrieval relevance,
+- evidence cleanliness,
+- citation confidence,
+- memo usefulness,
+- run reliability,
+- latency,
+- cost per run,
+- and time-to-completion for a new user.
 
-### 6.3 Critical Edge-Case Matrix
+### Release Gates
 
-- Input edge cases:
-  - Missing county/state/date.
-  - Non-hurricane peril types.
-  - Multi-state events.
-  - Invalid posture combinations.
-- Retrieval edge cases:
-  - API timeout, rate limit, partial outage, malformed results.
-  - Empty result set for one module.
-  - Provider schema changes.
-- Evidence edge cases:
-  - Duplicated URLs with conflicting metadata.
-  - Non-English pages.
-  - Paywalled citation leakage.
-  - HTML-heavy noisy text blocks.
-- Citation edge cases:
-  - Missing citation in relevant case.
-  - Citation appears only in commentary page.
-  - Conflicting case years/courts across sources.
-- Export edge cases:
-  - Missing module outputs.
-  - Overlong memo sections.
-  - Broken links and unsupported characters.
+- **Demo-ready**
+  - stable fixture lane, no hard crashes, readable output.
+- **Beta-ready**
+  - canonical evidence graph, web UX, partial-failure handling, measurable scorecard.
+- **Pilot-ready**
+  - review workflow, observability, security baseline, benchmark and usability thresholds.
 
-### 6.4 Reliability Targets
+## 11) Phased Roadmap
 
-- Cached run p95 latency: < 10 seconds.
-- Live run p95 latency: < 75 seconds.
-- Pipeline success rate: >= 99 percent (cached), >= 95 percent (live).
-- Citation check actionable rate (verified or clearly uncertain with reason): >= 95 percent.
+### Phase 0: Rebuild Framing And Product Foundation
 
-## 7) 30/60/90 Day Roadmap
+Goal: lock the shape of V2 before heavy implementation.
 
-### Days 0-30: Foundations
+- [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation
+- [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow + design system
+- [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph + audit schema
+- [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric + release scorecard
 
-- Stabilize dependencies and provider adapters.
-- Introduce domain models and validation.
-- Add robust test harness and scenario fixtures.
-- Define quality scorecard and acceptance thresholds.
+Exit criteria:
 
-### Days 31-60: Product Core
+- repo shape is decided,
+- product workflow is explicit,
+- canonical data model is defined,
+- and V2 has measurable success gates.
 
-- Build API orchestrator.
-- Ship web intake wizard + run status UI.
-- Implement evidence normalization and improved case filtering.
-- Add structured run audit logs and observability dashboards.
+### Phase 1: Foundation Hardening
 
-### Days 61-90: Trust and Adoption
+Goal: make the existing engine safe to build on.
 
-- Memo workspace and export improvements.
-- Firm memory v1 with governance.
-- Multi-fact-pattern evaluation suite and benchmark reporting.
-- Hardening pass for reliability, usability, and legal workflow fit.
+- [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models
+- [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts
+- [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures
+- [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) CI quality gates
 
-## 8) Success Metrics for V2
+Exit criteria:
 
-- Research package quality:
-  - Attorney-rated usefulness >= 8/10 on pilot matters.
-- Trust:
-  - Citation confidence and provenance accepted in partner review.
-- Usability:
-  - New user can complete intake and generate memo in < 10 minutes.
-- Reliability:
-  - Zero hard crashes in guided flow during pilot demos.
-- Engineering health:
-  - CI green with full quality gates and reproducible builds.
+- typed contracts are real,
+- provider boundaries are stable,
+- scenario coverage is broader than one demo matter,
+- and CI enforces more than unit success.
 
-## 9) Immediate Next Actions
+### Phase 2: Product Core
 
-1. Align live-eval intake schema with canonical `CaseIntake` (issue #5).
-2. Introduce typed contracts across modules (issue #6).
-3. Finalize retrieval contract boundary and tests (issue #7).
-4. Build multi-jurisdiction fixture + snapshot quality lane (issue #8).
-5. Expand CI quality gates and release criteria (issue #9).
+Goal: turn the prototype engine into a usable product workflow.
 
+- [#10](https://github.com/itprodirect/cat-loss-war-room-demo/issues/10) orchestration API
+- [#11](https://github.com/itprodirect/cat-loss-war-room-demo/issues/11) web intake + run status UX
+- [#12](https://github.com/itprodirect/cat-loss-war-room-demo/issues/12) evidence normalization
+- [#13](https://github.com/itprodirect/cat-loss-war-room-demo/issues/13) case-law quality v2
+- [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25) AI guardrails + eval harness
+- [#26](https://github.com/itprodirect/cat-loss-war-room-demo/issues/26) human review workflow
+
+Exit criteria:
+
+- a non-technical user can complete a guided run,
+- evidence is normalized and reviewable,
+- AI behavior is constrained,
+- and humans can edit without losing provenance.
+
+### Phase 3: Trust, Operations, And Adoption
+
+Goal: make V2 pilotable in a serious legal environment.
+
+- [#14](https://github.com/itprodirect/cat-loss-war-room-demo/issues/14) citation verification v2
+- [#15](https://github.com/itprodirect/cat-loss-war-room-demo/issues/15) memo workspace/export v2
+- [#16](https://github.com/itprodirect/cat-loss-war-room-demo/issues/16) firm memory v1
+- [#17](https://github.com/itprodirect/cat-loss-war-room-demo/issues/17) observability + cost controls
+- [#18](https://github.com/itprodirect/cat-loss-war-room-demo/issues/18) security baseline
+- [#19](https://github.com/itprodirect/cat-loss-war-room-demo/issues/19) attorney pilot validation
+
+Exit criteria:
+
+- trust signals are operationalized,
+- the memo workflow is clean enough for repeated use,
+- operations and security are measurable,
+- and pilot learnings feed the next backlog.
+
+## 12) Hard Recommendations
+
+- Build V2 as a modular monolith, not a fleet of services.
+- Keep the notebook, but demote it to diagnostic/demo status.
+- Treat provenance as a first-order product feature, not an appendix detail.
+- Do not ship "AI magic" before scorecards, evidence links, and human review are real.
+- Do not start firm memory until review workflow, provenance, and security baseline are underway.
+
+## 13) Immediate Next Actions
+
+1. Finish the remaining typed-domain work in [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) with explicit schema-versioning rules.
+2. Start [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22), [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) before major V2 implementation.
+3. Use the current notebook plus fixture lane as the regression harness while API and web surfaces come online.
+4. Only introduce AI into V2 through the guardrailed path defined in [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25).

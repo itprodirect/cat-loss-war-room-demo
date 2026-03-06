@@ -160,3 +160,54 @@ Status: Complete (slice 3)
   - `tests/test_memo_contracts.py` (citation summary validation + memo input normalization)
   - updated `tests/test_citation_verify.py` assertions for normalized badge tokens.
 - Verification: `pytest -q` -> 109 passed.
+
+## Session 14 - Nightly Wrap-Up: Documentation Sync
+Date: 2026-03-05
+Status: Complete
+
+- Audited core docs for stale roadmap/status references after PR #21 merge.
+- Updated `CLAUDE.md` test-count and next-priority guidance.
+- Updated `docs/ROADMAP.md` to current state:
+  - #5 closed,
+  - #6 in progress (slices 1-3 merged),
+  - 109 passing tests.
+- Updated `docs/V2_ISSUE_MAP.md` phase status notes for #5 and #6.
+- Verified repository test suite remains green (`109 passed`).
+
+## Session 15 - Nightly Close-Out: Final Docs Alignment
+Date: 2026-03-05
+Status: Complete
+
+- Confirmed README, HANDOFF, roadmap, and issue-map status sections are aligned.
+- Updated `docs/HANDOFF.md` to mark issue #5 as complete/closed.
+- Updated `docs/V2_BLUEPRINT.md` immediate next actions to reflect post-#5 and post-#6-slice-3 state.
+- Re-validated docs consistency against current issue and test status.
+
+
+## Session 16 - V2 Rebuild Deep Dive and Roadmap Expansion
+Date: 2026-03-06
+Status: Complete
+
+- Audited the repo as a product candidate, not just a codebase:
+  - read the core docs,
+  - inspected all major modules,
+  - reviewed CI/workflow setup,
+  - ran the cached end-to-end pipeline,
+  - and verified `pytest -q` still passes (`109 passed`).
+- Rewrote `docs/V2_BLUEPRINT.md` into a more opinionated rebuild plan:
+  - current-state scorecard,
+  - keep/kill/rewrite guidance,
+  - UX verdict and experience blueprint,
+  - modular-monolith architecture recommendation,
+  - AI guardrails,
+  - phased V2 roadmap.
+- Expanded planning docs to reflect the deeper V2 foundation layer:
+  - `docs/ROADMAP.md`
+  - `docs/V2_ISSUE_MAP.md`
+- Created new GitHub issues to support the rebuild:
+  - `#22` product foundation,
+  - `#23` workflow + design system,
+  - `#24` canonical evidence graph + audit schema,
+  - `#25` AI guardrails + eval harness,
+  - `#26` human review workflow,
+  - `#27` quality rubric + release scorecard.

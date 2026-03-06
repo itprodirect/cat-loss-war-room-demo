@@ -15,7 +15,7 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of March 5, 2026)
+## 2) Current status (as of March 6, 2026)
 
 | Item | Status |
 |---|---|
@@ -24,8 +24,9 @@ This is research acceleration, not legal advice.
 | Tests | 109 passing, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix |
 | Exa compatibility hardening (`#4`) | Complete and closed |
-| Intake schema alignment (`#5`) | Implemented and committed |
-| Typed domain contracts (`#6`) | Slices 1-3 complete (intake/query + packs + citation/export contracts) |
+| Intake schema alignment (`#5`) | Complete and closed |
+| Typed domain contracts (#6) | Slices 1-3 complete (intake/query + packs + citation/export contracts) |
+| V2 foundation planning (#22-#27) | Created and documented |
 | Cache samples | Milton/Citizens/Pinellas committed |
 
 ## 3) What changed recently
@@ -37,9 +38,9 @@ This is research acceleration, not legal advice.
 - Adapter smoke tests were added for kwargs forwarding contracts.
 - Intake JSON now has strict schema validation and file-loading helpers.
 - Typed domain contracts now cover intake/query, weather/carrier/caselaw packs, and citation/export memo contracts.
+- V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.
 
 ## 4) Quick run
-
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -64,6 +65,10 @@ Core implementation lives in `src/war_room/`.
 ## 7) Roadmap summary
 
 ### Now
+- #22 product foundation
+- #23 workflow IA and design system
+- #24 canonical evidence graph and audit schema
+- #27 quality rubric and release scorecard
 - #6 typed domain contracts
 - #7 retrieval provider abstraction and contracts
 - #8 multi-jurisdiction fixtures and snapshots
@@ -74,6 +79,8 @@ Core implementation lives in `src/war_room/`.
 - #11 guided web intake and run-status UX
 - #12 evidence normalization and provenance
 - #13 caselaw quality v2
+- #25 AI guardrails and eval harness
+- #26 human review workflow
 
 ### Then
 - #14 citation verification hardening
@@ -84,7 +91,6 @@ Core implementation lives in `src/war_room/`.
 - #19 attorney pilot validation
 
 ## 8) Canonical docs
-
 - [README.md](../README.md): quickstart and status
 - [ROADMAP.md](ROADMAP.md): plain-language roadmap
 - [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md): issue-by-issue execution map
@@ -92,3 +98,5 @@ Core implementation lives in `src/war_room/`.
 - [METHOD.md](METHOD.md): module behavior and methodology
 - [SAFETY_GUARDRAILS.md](SAFETY_GUARDRAILS.md): safety boundaries
 - [eval/README.md](../eval/README.md): live eval lane rules and intake template
+
+
