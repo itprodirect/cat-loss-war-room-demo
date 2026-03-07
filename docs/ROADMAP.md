@@ -1,13 +1,13 @@
 # Roadmap (Simple, Current)
 
-Last updated: March 6, 2026
+Last updated: March 7, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 115 tests are passing.
+- 122 tests are passing.
 - CI has a fresh-environment gate, editable-package install, and `exa-py` compatibility matrix.
 - A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
@@ -95,3 +95,5 @@ Goal: trust, polish, and real-world adoption readiness.
 
 - Detailed architecture plan: [V2_BLUEPRINT.md](V2_BLUEPRINT.md)
 - Issue-by-issue map: [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md)
+
+

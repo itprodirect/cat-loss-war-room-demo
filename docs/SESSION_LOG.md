@@ -56,7 +56,7 @@ Status: Complete
 Date: 2026-03-06
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 115 passing.
+- Test status: 122 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -249,7 +249,7 @@ Status: Complete
   - placeholder `apps/`, `workers/`, and `packages/` directories
 - Verification:
   - `.venv\Scripts\python -m war_room`
-  - `.venv\Scripts\python -m pytest -q` -> `115 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `122 passed`
 
 ## Session 19 - PR #28 CI Fix
 Date: 2026-03-06
@@ -262,4 +262,22 @@ Status: Complete
   - `.github/workflows/ci.yml`
   - `.github/workflows/exa-compat-matrix.yml`
 - Verification:
-  - `.venv\Scripts\python -m pytest -q` -> `115 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `122 passed`
+
+
+## Session 20 - Carrier and Case-Law Quality Hardening
+Date: 2026-03-07
+Status: Complete
+
+- Tightened carrier-result curation to drop low-value regulator navigation pages and prefer document-like regulatory evidence.
+- Tightened case-law filtering to exclude commentary/explainer titles from case slots and prefer legal-host, citation-bearing authorities.
+- Added stronger regression coverage in:
+  - `tests/test_carrier.py`
+  - `tests/test_caselaw.py`
+  - `tests/test_caselaw_filter.py`
+  - `tests/test_offline_demo_pack.py`
+- Curated the committed offline demo fixtures so the sample carrier, caselaw, and citation-check payloads match the higher quality bar.
+- Verification:
+  - `.venv\Scripts\python -m pytest tests/test_carrier.py tests/test_caselaw.py tests/test_caselaw_filter.py tests/test_offline_demo_pack.py -q` -> `39 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `122 passed`
+
