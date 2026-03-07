@@ -2,7 +2,7 @@
 
 import tempfile
 
-from war_room.query_plan import CaseIntake
+from war_room.models import CaseIntake
 from war_room.weather_module import _assemble_brief, _extract_metrics, build_weather_brief
 
 

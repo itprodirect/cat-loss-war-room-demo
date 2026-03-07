@@ -7,25 +7,30 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from war_room.models import (
+    CaseIntake,
+    CaseLawPack,
+    CarrierDocPack,
+    CitationVerifyPack,
+    QuerySpec,
+    WeatherBrief,
     carrier_doc_pack_to_payload,
     caselaw_pack_to_payload,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
     weather_brief_to_payload,
 )
-from war_room.query_plan import CaseIntake, QuerySpec
 
 
 def render_markdown_memo(
-    intake: CaseIntake,
-    weather: dict[str, Any],
-    carrier: dict[str, Any],
-    caselaw: dict[str, Any],
-    citecheck: dict[str, Any],
-    query_plan: list[QuerySpec],
+    intake: Mapping[str, Any] | CaseIntake,
+    weather: Mapping[str, Any] | WeatherBrief,
+    carrier: Mapping[str, Any] | CarrierDocPack,
+    caselaw: Mapping[str, Any] | CaseLawPack,
+    citecheck: Mapping[str, Any] | CitationVerifyPack,
+    query_plan: list[Mapping[str, Any] | QuerySpec],
 ) -> str:
     """Render the full research memo as markdown."""
     memo_input = memo_render_input_from_parts(

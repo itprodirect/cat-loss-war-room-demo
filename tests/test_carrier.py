@@ -8,7 +8,7 @@ from war_room.carrier_module import (
     _extract_defenses,
     build_carrier_doc_pack,
 )
-from war_room.query_plan import CaseIntake
+from war_room.models import CaseIntake
 
 
 def _sample_intake() -> CaseIntake:

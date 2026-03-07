@@ -1,6 +1,7 @@
 """Tests for query_plan module."""
 
-from war_room.query_plan import CaseIntake, generate_query_plan, format_query_plan
+from war_room.models import CaseIntake, QuerySpec
+from war_room.query_plan import generate_query_plan, format_query_plan
 
 
 def _sample_intake() -> CaseIntake:
@@ -53,6 +54,15 @@ def test_format_query_plan_output():
     assert "WEATHER DATA" in output
     assert "CARRIER DOCUMENTS" in output
     assert "CASE LAW" in output
+
+
+def test_format_query_plan_accepts_dict_payloads():
+    output = format_query_plan(
+        [QuerySpec(module="weather", query="storm report", category="damage_report").model_dump()]
+    )
+
+    assert "QUERY PLAN - 1 queries" in output
+    assert "storm report" in output
 
 
 def test_bad_faith_posture_adds_query():

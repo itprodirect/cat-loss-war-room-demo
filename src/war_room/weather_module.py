@@ -11,8 +11,8 @@ from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
 from war_room.exa_client import ExaClient
-from war_room.models import weather_brief_to_payload
-from war_room.query_plan import CaseIntake, generate_query_plan
+from war_room.models import CaseIntake, weather_brief_to_payload
+from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import score_url
 
 GOV_WEATHER_DOMAINS = [
@@ -286,4 +286,3 @@ def _extract_metrics(text: str) -> dict[str, Any]:
         metrics["rain_in"] = max(float(rain) for rain in rain_matches)
 
     return metrics
-

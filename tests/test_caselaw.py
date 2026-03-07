@@ -3,7 +3,7 @@
 import tempfile
 
 from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
-from war_room.query_plan import CaseIntake
+from war_room.models import CaseIntake
 
 
 def _sample_intake() -> CaseIntake:

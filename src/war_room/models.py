@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import re
-from typing import Any, Literal, Mapping
+from typing import Any, Literal, Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -291,6 +291,13 @@ def adapt_query_spec(payload: Mapping[str, Any] | QuerySpec) -> QuerySpec:
     return QuerySpec.model_validate(payload)
 
 
+def adapt_query_plan(
+    payload: Sequence[Mapping[str, Any] | QuerySpec],
+) -> list[QuerySpec]:
+    """Validate/coerce a mixed query-plan payload into typed query specs."""
+    return [adapt_query_spec(item) for item in payload]
+
+
 def adapt_weather_brief(payload: Mapping[str, Any] | WeatherBrief) -> WeatherBrief:
     """Validate/coerce weather payload into typed model."""
     if isinstance(payload, WeatherBrief):
@@ -330,14 +337,13 @@ def memo_render_input_from_parts(
     query_plan: list[Mapping[str, Any] | QuerySpec],
 ) -> MemoRenderInput:
     """Build typed memo-render input from mixed dict/model payloads."""
-    typed_queries = [adapt_query_spec(item) for item in query_plan]
     return MemoRenderInput(
         intake=adapt_case_intake(intake),
         weather=adapt_weather_brief(weather),
         carrier=adapt_carrier_doc_pack(carrier),
         caselaw=adapt_caselaw_pack(caselaw),
         citecheck=adapt_citation_verify_pack(citecheck),
-        query_plan=typed_queries,
+        query_plan=adapt_query_plan(query_plan),
     )
 
 
@@ -352,6 +358,23 @@ def _model_to_payload(model: BaseModel) -> dict[str, Any]:
 def weather_brief_to_payload(payload: Mapping[str, Any] | WeatherBrief) -> dict[str, Any]:
     """Return a weather payload normalized against the typed contract."""
     return _model_to_payload(adapt_weather_brief(payload))
+
+
+def case_intake_to_payload(payload: Mapping[str, Any] | CaseIntake) -> dict[str, Any]:
+    """Return an intake payload normalized against the typed contract."""
+    return _model_to_payload(adapt_case_intake(payload))
+
+
+def query_spec_to_payload(payload: Mapping[str, Any] | QuerySpec) -> dict[str, Any]:
+    """Return a query-spec payload normalized against the typed contract."""
+    return _model_to_payload(adapt_query_spec(payload))
+
+
+def query_plan_to_payloads(
+    payload: Sequence[Mapping[str, Any] | QuerySpec],
+) -> list[dict[str, Any]]:
+    """Return a query plan normalized against the typed contract."""
+    return [query_spec_to_payload(item) for item in adapt_query_plan(payload)]
 
 
 def carrier_doc_pack_to_payload(

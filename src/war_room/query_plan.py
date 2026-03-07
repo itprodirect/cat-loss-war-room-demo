@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from war_room.models import CaseIntake, QuerySpec
+from war_room.models import CaseIntake, QuerySpec, adapt_query_plan
 
 CASE_INTAKE_REQUIRED_FIELDS = (
     "event_name",
@@ -324,11 +324,13 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
     return queries
 
 
-def format_query_plan(queries: list[QuerySpec]) -> str:
+def format_query_plan(queries: list[Mapping[str, Any] | QuerySpec]) -> str:
     """Format the query plan grouped by module for display."""
+    typed_queries = adapt_query_plan(queries)
+
     lines = [
         "=" * 60,
-        f"QUERY PLAN - {len(queries)} queries",
+        f"QUERY PLAN - {len(typed_queries)} queries",
         "=" * 60,
     ]
 
@@ -340,7 +342,7 @@ def format_query_plan(queries: list[QuerySpec]) -> str:
     }
 
     for mod in modules:
-        mod_queries = [q for q in queries if q.module == mod]
+        mod_queries = [q for q in typed_queries if q.module == mod]
         if mod_queries:
             lines.append(f"\n  [{module_labels.get(mod, mod)}] ({len(mod_queries)} queries)")
             lines.append("  " + "-" * 40)

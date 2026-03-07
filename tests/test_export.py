@@ -3,7 +3,7 @@
 import tempfile
 
 from war_room.export_md import render_markdown_memo, write_markdown
-from war_room.query_plan import CaseIntake, QuerySpec
+from war_room.models import CaseIntake, QuerySpec
 
 
 def _sample_data():
@@ -21,25 +21,83 @@ def _sample_data():
         "event_summary": "Hurricane Milton - Pinellas County, FL",
         "key_observations": ["Winds of 120 mph"],
         "metrics": {"max_wind_mph": 120, "storm_surge_ft": None, "rain_in": None},
-        "sources": [{"title": "NWS Report", "url": "https://weather.gov/r", "badge": "official", "reason": "Official source"}],
+        "sources": [
+            {
+                "title": "NWS Report",
+                "url": "https://weather.gov/r",
+                "badge": "official",
+                "reason": "Official source",
+            }
+        ],
     }
     carrier = {
         "module": "carrier",
-        "carrier_snapshot": {"name": "Citizens", "state": "FL", "event": "Milton", "policy_type": "HO-3"},
-        "document_pack": [{"doc_type": "Denial", "title": "Doc", "url": "https://example.com", "badge": "professional", "why_it_matters": "Relevant"}],
+        "carrier_snapshot": {
+            "name": "Citizens",
+            "state": "FL",
+            "event": "Milton",
+            "policy_type": "HO-3",
+        },
+        "document_pack": [
+            {
+                "doc_type": "Denial",
+                "title": "Doc",
+                "url": "https://example.com",
+                "badge": "professional",
+                "why_it_matters": "Relevant",
+            }
+        ],
         "common_defenses": ["Pre-existing damage"],
         "rebuttal_angles": ["Timeline contradicts carrier position"],
-        "sources": [{"title": "Article", "url": "https://example.com", "badge": "professional", "reason": "Professional source"}],
+        "sources": [
+            {
+                "title": "Article",
+                "url": "https://example.com",
+                "badge": "professional",
+                "reason": "Professional source",
+            }
+        ],
     }
     caselaw = {
         "module": "caselaw",
-        "issues": [{"issue": "Coverage", "cases": [{"name": "Doe v. Ins", "citation": "123 So.3d 456", "court": "Fla. App.", "year": "2023", "one_liner": "Coverage upheld", "url": "https://example.com", "badge": "professional"}], "notes": ["Relevant"]}],
-        "sources": [{"title": "Case", "url": "https://example.com/c", "badge": "professional", "reason": "Professional source"}],
+        "issues": [
+            {
+                "issue": "Coverage",
+                "cases": [
+                    {
+                        "name": "Doe v. Ins",
+                        "citation": "123 So.3d 456",
+                        "court": "Fla. App.",
+                        "year": "2023",
+                        "one_liner": "Coverage upheld",
+                        "url": "https://example.com",
+                        "badge": "professional",
+                    }
+                ],
+                "notes": ["Relevant"],
+            }
+        ],
+        "sources": [
+            {
+                "title": "Case",
+                "url": "https://example.com/c",
+                "badge": "professional",
+                "reason": "Professional source",
+            }
+        ],
     }
     citecheck = {
         "module": "citation_verify",
         "disclaimer": "SPOT-CHECK ONLY",
-        "checks": [{"badge": "verified", "case_name": "Doe v. Ins", "citation": "123 So.3d 456", "status": "verified", "note": "Found on official source"}],
+        "checks": [
+            {
+                "badge": "verified",
+                "case_name": "Doe v. Ins",
+                "citation": "123 So.3d 456",
+                "status": "verified",
+                "note": "Found on official source",
+            }
+        ],
         "summary": {"total": 1, "verified": 1, "uncertain": 0, "not_found": 0},
     }
     queries = [QuerySpec(module="weather", query="test query", category="test")]
@@ -87,6 +145,22 @@ def test_render_surfaces_review_flags_when_present():
     assert "Review Required" in md
     assert "Weather: County-specific weather corroboration is limited." in md
     assert "Citation review: 1 uncertain and 0 not found entries require manual verification." in md
+
+
+def test_render_accepts_dict_intake_and_query_specs():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+
+    md = render_markdown_memo(
+        intake.model_dump(),
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        [queries[0].model_dump()],
+    )
+
+    assert "Case Intake" in md
+    assert "Total queries: 1" in md
 
 
 def test_write_markdown_creates_file():
