@@ -10,6 +10,8 @@ from war_room.models import (
     adapt_citation_verify_pack,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
+    run_audit_snapshot_from_parts,
+    run_audit_snapshot_to_payload,
 )
 
 
@@ -155,6 +157,46 @@ def test_memo_render_input_from_parts_accepts_mixed_shapes():
     assert memo_input.query_plan[0].module == "weather"
 
 
+def test_run_audit_snapshot_builds_canonical_entities():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        [query_plan[0].model_dump()],
+    )
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert len(snapshot.evidence_items) == 4
+    assert len(snapshot.memo_claims) == 4
+    assert snapshot.export_artifact.artifact_type == "markdown_memo"
+    assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
+    assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
+
+
+def test_run_audit_snapshot_tracks_review_events_and_claim_status():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    weather["warnings"] = ["County-specific weather corroboration is limited."]
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    assert {event.event_type for event in snapshot.review_events} == {"warning", "citation_uncertain"}
+    assert any(claim.claim_id == "weather-corroboration" and claim.status == "review_required" for claim in snapshot.memo_claims)
+    assert any(claim.claim_id == "citation-check-status" and claim.status == "review_required" for claim in snapshot.memo_claims)
+
+
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
     intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
 
@@ -171,3 +213,4 @@ def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
     assert "Citation Spot-Check" in markdown
     assert "Citation Confidence" in markdown
     assert "Trust Snapshot" in markdown
+    assert "Evidence Index" in markdown

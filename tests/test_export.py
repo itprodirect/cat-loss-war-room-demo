@@ -116,6 +116,7 @@ def test_render_contains_all_sections():
     assert "Case Law" in md
     assert "Citation Spot-Check" in md
     assert "Query Plan" in md
+    assert "Evidence Index" in md
     assert "All Sources" in md
     assert "Methodology" in md
 
@@ -145,6 +146,17 @@ def test_render_surfaces_review_flags_when_present():
     assert "Review Required" in md
     assert "Weather: County-specific weather corroboration is limited." in md
     assert "Citation review: 1 uncertain and 0 not found entries require manual verification." in md
+    assert "Appendix: Review Log" in md
+    assert "Citation review required" in md
+
+
+def test_render_includes_canonical_evidence_index_rows():
+    md = render_markdown_memo(*_sample_data())
+
+    assert "weather-source-1" in md
+    assert "carrier-document-1" in md
+    assert "caselaw-case-1-1" in md
+    assert "citation-check-1" in md
 
 
 def test_render_accepts_dict_intake_and_query_specs():

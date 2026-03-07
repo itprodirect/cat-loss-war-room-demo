@@ -20,6 +20,7 @@ from war_room.models import (
     caselaw_pack_to_payload,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
+    run_audit_snapshot_from_memo_input,
     weather_brief_to_payload,
 )
 
@@ -48,6 +49,7 @@ def render_markdown_memo(
     caselaw_payload = caselaw_pack_to_payload(memo_input.caselaw)
     citecheck_payload = citation_verify_pack_to_payload(memo_input.citecheck)
     query_plan = memo_input.query_plan
+    audit_snapshot = run_audit_snapshot_from_memo_input(memo_input)
 
     lines: list[str] = []
 
@@ -235,7 +237,17 @@ def render_markdown_memo(
         lines.append(f"| {query.module} | {query.category} | {query.query[:80]} |")
     lines.append("")
 
-    # --- 7. Source Appendix (deduplicated) ---
+    # --- 7. Evidence Appendix ---
+    lines.append("## Appendix: Evidence Index")
+    lines.append("")
+    _append_evidence_index(lines, audit_snapshot.evidence_items)
+
+    if audit_snapshot.review_events:
+        lines.append("## Appendix: Review Log")
+        lines.append("")
+        _append_review_log(lines, audit_snapshot.review_events)
+
+    # --- 8. Source Appendix (deduplicated) ---
     lines.append("## Appendix: All Sources")
     lines.append("")
     all_sources: list[dict[str, Any]] = []
@@ -281,6 +293,32 @@ def write_markdown(output_dir: str | Path, case_key: str, md: str) -> Path:
     path = out / filename
     path.write_text(md, encoding="utf-8")
     return path
+
+
+def _append_evidence_index(lines: list[str], evidence_items: list[Any]) -> None:
+    """Append the canonical evidence index derived from the audit snapshot."""
+    if not evidence_items:
+        lines.append("No evidence items captured.")
+        lines.append("")
+        return
+
+    lines.append("| ID | Module | Type | Title | Badge | URL |")
+    lines.append("|----|--------|------|-------|-------|-----|")
+    for item in evidence_items:
+        title = item.title or item.summary or item.evidence_type
+        url = item.url or ""
+        lines.append(
+            f"| {item.evidence_id} | {item.module} | {item.evidence_type} | "
+            f"{title[:50]} | {item.badge} | {url} |"
+        )
+    lines.append("")
+
+
+def _append_review_log(lines: list[str], review_events: list[Any]) -> None:
+    """Append review-required audit events when present."""
+    for event in review_events:
+        lines.append(f"- **{event.label}:** {event.detail}")
+    lines.append("")
 
 
 def _append_sources(lines: list[str], sources: list[dict[str, Any]], label: str) -> None:

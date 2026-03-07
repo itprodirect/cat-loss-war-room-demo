@@ -264,6 +264,60 @@ class CitationVerifyPack(BaseModel):
     summary: CitationSummary
 
 
+class EvidenceItem(BaseModel):
+    """Canonical evidence record derived from module outputs."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    evidence_id: str = Field(min_length=1)
+    module: Literal["weather", "carrier", "caselaw", "citation_verify"]
+    evidence_type: str = Field(min_length=1)
+    title: str = ""
+    summary: str = ""
+    url: str | None = None
+    badge: str = Field(min_length=1)
+    source_reason: str | None = None
+    issue: str | None = None
+    citation: str | None = None
+    review_required: bool = False
+
+
+class MemoClaim(BaseModel):
+    """Evidence-linked memo assertion for audit purposes."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    claim_id: str = Field(min_length=1)
+    section: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    evidence_ids: list[str] = Field(default_factory=list)
+    status: Literal["supported", "review_required"] = "supported"
+
+
+class ReviewEvent(BaseModel):
+    """Review-required event emitted during memo assembly."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    event_id: str = Field(min_length=1)
+    event_type: Literal["warning", "citation_uncertain", "citation_not_found"]
+    label: str = Field(min_length=1)
+    detail: str = Field(min_length=1)
+    module: str | None = None
+    related_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class ExportArtifact(BaseModel):
+    """Export metadata for the generated memo artifact."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    artifact_type: Literal["markdown_memo"] = "markdown_memo"
+    title: str = Field(min_length=1)
+    disclaimer: str = Field(min_length=1)
+    section_titles: list[str] = Field(default_factory=list)
+
+
 class MemoRenderInput(BaseModel):
     """Typed contract for markdown memo rendering input."""
 
@@ -275,6 +329,19 @@ class MemoRenderInput(BaseModel):
     caselaw: CaseLawPack
     citecheck: CitationVerifyPack
     query_plan: list[QuerySpec] = Field(default_factory=list)
+
+
+class RunAuditSnapshot(BaseModel):
+    """Canonical audit snapshot for a rendered research memo."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    intake: CaseIntake
+    query_plan: list[QuerySpec] = Field(default_factory=list)
+    evidence_items: list[EvidenceItem] = Field(default_factory=list)
+    memo_claims: list[MemoClaim] = Field(default_factory=list)
+    review_events: list[ReviewEvent] = Field(default_factory=list)
+    export_artifact: ExportArtifact
 
 
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
@@ -347,6 +414,265 @@ def memo_render_input_from_parts(
     )
 
 
+
+def adapt_run_audit_snapshot(
+    payload: Mapping[str, Any] | RunAuditSnapshot,
+) -> RunAuditSnapshot:
+    """Validate/coerce a run audit snapshot into the canonical typed contract."""
+    if isinstance(payload, RunAuditSnapshot):
+        return payload
+    return RunAuditSnapshot.model_validate(payload)
+
+
+def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
+    """Build a canonical audit snapshot from normalized memo-render input."""
+    weather_payload = weather_brief_to_payload(memo_input.weather)
+    carrier_payload = carrier_doc_pack_to_payload(memo_input.carrier)
+    caselaw_payload = caselaw_pack_to_payload(memo_input.caselaw)
+    citecheck_payload = citation_verify_pack_to_payload(memo_input.citecheck)
+
+    evidence_items: list[EvidenceItem] = []
+    evidence_ids_by_module = {
+        "weather": [],
+        "carrier": [],
+        "caselaw": [],
+        "citation_verify": [],
+    }
+
+    weather_observations = weather_payload.get("key_observations", [])
+    for index, source in enumerate(weather_payload.get("sources", []), 1):
+        evidence_id = f"weather-source-{index}"
+        summary = weather_observations[index - 1] if index <= len(weather_observations) else weather_payload.get("event_summary", "")
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=evidence_id,
+                module="weather",
+                evidence_type="weather_source",
+                title=source.get("title", ""),
+                summary=summary,
+                url=source.get("url"),
+                badge=source.get("badge", ""),
+                source_reason=source.get("reason"),
+            )
+        )
+        evidence_ids_by_module["weather"].append(evidence_id)
+
+    carrier_source_reasons = {
+        source.get("url"): source.get("reason")
+        for source in carrier_payload.get("sources", [])
+        if source.get("url")
+    }
+    for index, document in enumerate(carrier_payload.get("document_pack", []), 1):
+        evidence_id = f"carrier-document-{index}"
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=evidence_id,
+                module="carrier",
+                evidence_type=document.get("doc_type", "carrier_document").lower().replace(" ", "_"),
+                title=document.get("title", ""),
+                summary=document.get("why_it_matters", ""),
+                url=document.get("url"),
+                badge=document.get("badge", ""),
+                source_reason=carrier_source_reasons.get(document.get("url")),
+            )
+        )
+        evidence_ids_by_module["carrier"].append(evidence_id)
+
+    caselaw_source_reasons = {
+        source.get("url"): source.get("reason")
+        for source in caselaw_payload.get("sources", [])
+        if source.get("url")
+    }
+    for issue_index, issue in enumerate(caselaw_payload.get("issues", []), 1):
+        for case_index, case in enumerate(issue.get("cases", []), 1):
+            evidence_id = f"caselaw-case-{issue_index}-{case_index}"
+            evidence_items.append(
+                EvidenceItem(
+                    evidence_id=evidence_id,
+                    module="caselaw",
+                    evidence_type="case_authority",
+                    title=case.get("name", ""),
+                    summary=case.get("one_liner", ""),
+                    url=case.get("url"),
+                    badge=case.get("badge", ""),
+                    source_reason=caselaw_source_reasons.get(case.get("url")),
+                    issue=issue.get("issue"),
+                    citation=case.get("citation") or None,
+                )
+            )
+            evidence_ids_by_module["caselaw"].append(evidence_id)
+
+    for index, check in enumerate(citecheck_payload.get("checks", []), 1):
+        evidence_id = f"citation-check-{index}"
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=evidence_id,
+                module="citation_verify",
+                evidence_type="citation_check",
+                title=check.get("case_name") or check.get("citation") or f"Citation Check {index}",
+                summary=check.get("note", ""),
+                url=check.get("source_url"),
+                badge=check.get("badge", ""),
+                source_reason=check.get("status"),
+                citation=check.get("citation") or None,
+                review_required=check.get("status") != "verified",
+            )
+        )
+        evidence_ids_by_module["citation_verify"].append(evidence_id)
+
+    review_events: list[ReviewEvent] = []
+    for module_key, module_label, payload in (
+        ("weather", "Weather", weather_payload),
+        ("carrier", "Carrier", carrier_payload),
+        ("caselaw", "Case law", caselaw_payload),
+    ):
+        for index, warning in enumerate(payload.get("warnings", []) or [], 1):
+            review_events.append(
+                ReviewEvent(
+                    event_id=f"{module_key}-warning-{index}",
+                    event_type="warning",
+                    label=f"{module_label} review required",
+                    detail=warning,
+                    module=module_key,
+                    related_evidence_ids=evidence_ids_by_module[module_key],
+                )
+            )
+
+    citation_summary = citecheck_payload.get("summary", {})
+    uncertain = citation_summary.get("uncertain", 0)
+    not_found = citation_summary.get("not_found", 0)
+    if uncertain:
+        review_events.append(
+            ReviewEvent(
+                event_id="citation-uncertain",
+                event_type="citation_uncertain",
+                label="Citation review required",
+                detail=f"{uncertain} citation checks are uncertain.",
+                module="citation_verify",
+                related_evidence_ids=evidence_ids_by_module["citation_verify"],
+            )
+        )
+    if not_found:
+        review_events.append(
+            ReviewEvent(
+                event_id="citation-not-found",
+                event_type="citation_not_found",
+                label="Citation not found",
+                detail=f"{not_found} citation checks were not found on reviewed sources.",
+                module="citation_verify",
+                related_evidence_ids=evidence_ids_by_module["citation_verify"],
+            )
+        )
+
+    review_modules = {event.module for event in review_events if event.module}
+    memo_claims = [
+        MemoClaim(
+            claim_id="weather-corroboration",
+            section="Weather Corroboration",
+            text=weather_payload.get("event_summary", "Weather evidence assembled."),
+            evidence_ids=evidence_ids_by_module["weather"],
+            status=_claim_status(evidence_ids_by_module["weather"], "weather" in review_modules),
+        ),
+        MemoClaim(
+            claim_id="carrier-positioning",
+            section="Carrier Document Pack",
+            text=_carrier_claim_text(carrier_payload),
+            evidence_ids=evidence_ids_by_module["carrier"],
+            status=_claim_status(evidence_ids_by_module["carrier"], "carrier" in review_modules),
+        ),
+        MemoClaim(
+            claim_id="case-law-support",
+            section="Case Law",
+            text=_caselaw_claim_text(caselaw_payload),
+            evidence_ids=evidence_ids_by_module["caselaw"],
+            status=_claim_status(evidence_ids_by_module["caselaw"], "caselaw" in review_modules or bool(uncertain or not_found)),
+        ),
+        MemoClaim(
+            claim_id="citation-check-status",
+            section="Citation Spot-Check",
+            text=citecheck_payload.get("disclaimer", "Citation spot-check completed."),
+            evidence_ids=evidence_ids_by_module["citation_verify"],
+            status=_claim_status(evidence_ids_by_module["citation_verify"], bool(uncertain or not_found)),
+        ),
+    ]
+
+    section_titles = [
+        "Trust Snapshot",
+        "Case Intake",
+        "Weather Corroboration",
+        "Carrier Document Pack",
+        "Case Law",
+        "Appendix: Query Plan",
+        "Appendix: Evidence Index",
+        "Appendix: All Sources",
+        "Methodology & Limitations",
+    ]
+    if review_events:
+        section_titles.insert(7, "Appendix: Review Log")
+
+    return RunAuditSnapshot(
+        intake=memo_input.intake,
+        query_plan=memo_input.query_plan,
+        evidence_items=evidence_items,
+        memo_claims=memo_claims,
+        review_events=review_events,
+        export_artifact=ExportArtifact(
+            title="CAT-Loss War Room - Research Memo",
+            disclaimer="DEMO RESEARCH MEMO - VERIFY CITATIONS - NOT LEGAL ADVICE",
+            section_titles=section_titles,
+        ),
+    )
+
+
+def run_audit_snapshot_from_parts(
+    intake: Mapping[str, Any] | CaseIntake,
+    weather: Mapping[str, Any] | WeatherBrief,
+    carrier: Mapping[str, Any] | CarrierDocPack,
+    caselaw: Mapping[str, Any] | CaseLawPack,
+    citecheck: Mapping[str, Any] | CitationVerifyPack,
+    query_plan: list[Mapping[str, Any] | QuerySpec],
+) -> RunAuditSnapshot:
+    """Build a canonical audit snapshot from mixed dict/model payloads."""
+    return run_audit_snapshot_from_memo_input(
+        memo_render_input_from_parts(intake, weather, carrier, caselaw, citecheck, query_plan)
+    )
+
+
+def _claim_status(evidence_ids: list[str], has_review_event: bool) -> str:
+    if not evidence_ids or has_review_event:
+        return "review_required"
+    return "supported"
+
+
+def _carrier_claim_text(carrier_payload: dict[str, Any]) -> str:
+    rebuttals = carrier_payload.get("rebuttal_angles", [])
+    if rebuttals:
+        return rebuttals[0]
+
+    defenses = carrier_payload.get("common_defenses", [])
+    if defenses:
+        return defenses[0]
+
+    snapshot = carrier_payload.get("carrier_snapshot", {})
+    carrier_name = snapshot.get("name", "Carrier")
+    return f"{carrier_name} document pack assembled for review."
+
+
+def _caselaw_claim_text(caselaw_payload: dict[str, Any]) -> str:
+    issues = caselaw_payload.get("issues", [])
+    if not issues:
+        return "Case-law review requires manual follow-up."
+
+    first_issue = issues[0]
+    if first_issue.get("notes"):
+        return first_issue["notes"][0]
+
+    first_case = first_issue.get("cases", [])
+    if first_case and first_case[0].get("one_liner"):
+        return first_case[0]["one_liner"]
+
+    return f"Case-law authorities identified across {len(issues)} issue buckets."
+
 def _model_to_payload(model: BaseModel) -> dict[str, Any]:
     """Dump model while preserving legacy omission of `warnings` when empty."""
     data = model.model_dump()
@@ -375,6 +701,13 @@ def query_plan_to_payloads(
 ) -> list[dict[str, Any]]:
     """Return a query plan normalized against the typed contract."""
     return [query_spec_to_payload(item) for item in adapt_query_plan(payload)]
+
+
+def run_audit_snapshot_to_payload(
+    payload: Mapping[str, Any] | RunAuditSnapshot,
+) -> dict[str, Any]:
+    """Return a run audit snapshot normalized against the typed contract."""
+    return _model_to_payload(adapt_run_audit_snapshot(payload))
 
 
 def carrier_doc_pack_to_payload(
