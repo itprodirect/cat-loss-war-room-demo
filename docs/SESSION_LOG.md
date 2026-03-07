@@ -56,7 +56,7 @@ Status: Complete
 Date: 2026-03-06
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 130 passing.
+- Test status: 134 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -296,7 +296,7 @@ Status: Complete
 - Curated the committed weather fixture so the offline demo lane reflects the higher relevance bar.
 - Verification:
   - `.venv\Scripts\python -m pytest tests/test_weather.py tests/test_citation_verify.py tests/test_offline_demo_pack.py -q` -> `34 passed`
-  - `.venv\Scripts\python -m pytest -q` -> `130 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `134 passed`
 
 
 
@@ -316,5 +316,22 @@ Status: Complete
   - `tests/test_memo_contracts.py`
 - Verification:
   - `.venv\Scripts\python -m pytest tests/test_export.py tests/test_memo_contracts.py -q` -> `9 passed`
-  - `.venv\Scripts\python -m pytest -q` -> `130 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `134 passed`
+
+
+
+## Session 23 - Query Plan and Source-Tiering Hardening
+Date: 2026-03-07
+Status: Complete
+
+- Tightened query-plan specificity so legal and carrier searches carry better domain hints and more matter-specific context.
+- Added coverage-issue query deduplication to avoid repeated legal searches from near-duplicate intake phrasing.
+- Expanded deterministic source-tier coverage for additional legal and carrier-adjacent domains.
+- Switched source badge tokens to stable ASCII labels for cleaner downstream rendering and testing.
+- Added regression coverage in:
+  - `tests/test_query_plan.py`
+  - `tests/test_source_scoring.py`
+- Verification:
+  - `.venv\Scripts\python -m pytest tests/test_query_plan.py tests/test_source_scoring.py -q` -> `23 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `134 passed`
 
