@@ -160,6 +160,13 @@ def test_render_includes_evidence_clusters():
     assert "citation | 123 So.3d 456" in md
 
 
+def test_render_surfaces_claim_cluster_references():
+    md = render_markdown_memo(*_sample_data())
+
+    assert "> Claim status: supported | Evidence clusters: cluster-1" in md
+    assert "> Claim status: supported | Evidence clusters: cluster-3" in md
+
+
 def test_render_includes_canonical_evidence_index_rows():
     md = render_markdown_memo(*_sample_data())
 

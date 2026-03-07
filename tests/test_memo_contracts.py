@@ -177,6 +177,9 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
+    assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
+    assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
+    assert payload["memo_claims"][3]["cluster_ids"] == ["cluster-3"]
 
 
 def test_run_audit_snapshot_tracks_review_events_and_claim_status():
@@ -201,6 +204,10 @@ def test_run_audit_snapshot_tracks_review_events_and_claim_status():
     )
     assert any(
         claim.claim_id == "citation-check-status" and claim.status == "review_required"
+        for claim in snapshot.memo_claims
+    )
+    assert any(
+        claim.claim_id == "citation-check-status" and claim.cluster_ids == ["cluster-3"]
         for claim in snapshot.memo_claims
     )
 

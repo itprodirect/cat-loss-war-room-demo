@@ -114,6 +114,7 @@ def render_markdown_memo(
     lines.append("")
     lines.append(f"**{weather_payload.get('event_summary', '')}**")
     lines.append("")
+    _append_claim_trace(lines, audit_snapshot.memo_claims, "weather-corroboration")
     _append_warnings(lines, weather_payload.get("warnings", []), "Weather review flags")
     metrics = weather_payload.get("metrics", {})
     if any(value is not None for value in metrics.values()):
@@ -146,6 +147,7 @@ def render_markdown_memo(
         f"{snap.get('state', '')} - {snap.get('policy_type', '')}"
     )
     lines.append("")
+    _append_claim_trace(lines, audit_snapshot.memo_claims, "carrier-positioning")
     _append_warnings(lines, carrier_payload.get("warnings", []), "Carrier review flags")
 
     docs = carrier_payload.get("document_pack", [])
@@ -184,6 +186,7 @@ def render_markdown_memo(
     # --- 5. Case Law Pack + Citation Check ---
     lines.append("## Case Law")
     lines.append("")
+    _append_claim_trace(lines, audit_snapshot.memo_claims, "case-law-support")
     _append_warnings(lines, caselaw_payload.get("warnings", []), "Case-law review flags")
     _append_citation_summary(lines, citecheck_payload)
 
@@ -215,6 +218,7 @@ def render_markdown_memo(
         lines.append(f"> {citecheck_payload.get('disclaimer', '')}")
         lines.append("> Use this as a routing signal for review, not as verification.")
         lines.append("")
+        _append_claim_trace(lines, audit_snapshot.memo_claims, "citation-check-status")
         lines.append("| Badge | Case | Citation | Note |")
         lines.append("|-------|------|----------|------|")
         for check in checks:
@@ -297,6 +301,17 @@ def write_markdown(output_dir: str | Path, case_key: str, md: str) -> Path:
     path = out / filename
     path.write_text(md, encoding="utf-8")
     return path
+
+
+def _append_claim_trace(lines: list[str], memo_claims: list[Any], claim_id: str) -> None:
+    """Append stable claim-level trace metadata when available."""
+    claim = next((item for item in memo_claims if item.claim_id == claim_id), None)
+    if claim is None:
+        return
+
+    cluster_ids = ", ".join(claim.cluster_ids) if claim.cluster_ids else "none"
+    lines.append(f"> Claim status: {claim.status} | Evidence clusters: {cluster_ids}")
+    lines.append("")
 
 
 def _append_evidence_clusters(lines: list[str], evidence_clusters: list[Any]) -> None:

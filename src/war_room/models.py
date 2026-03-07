@@ -306,6 +306,7 @@ class MemoClaim(BaseModel):
     section: str = Field(min_length=1)
     text: str = Field(min_length=1)
     evidence_ids: list[str] = Field(default_factory=list)
+    cluster_ids: list[str] = Field(default_factory=list)
     status: Literal["supported", "review_required"] = "supported"
 
 
@@ -541,6 +542,12 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
 
     evidence_clusters = _build_evidence_clusters(evidence_items)
 
+    evidence_cluster_ids_by_evidence_id = {
+        evidence_id: cluster.cluster_id
+        for cluster in evidence_clusters
+        for evidence_id in cluster.evidence_ids
+    }
+
     review_events: list[ReviewEvent] = []
     for module_key, module_label, payload in (
         ("weather", "Weather", weather_payload),
@@ -592,6 +599,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Weather Corroboration",
             text=weather_payload.get("event_summary", "Weather evidence assembled."),
             evidence_ids=evidence_ids_by_module["weather"],
+            cluster_ids=_cluster_ids_for_claim(
+                evidence_ids_by_module["weather"],
+                evidence_cluster_ids_by_evidence_id,
+            ),
             status=_claim_status(
                 evidence_ids_by_module["weather"],
                 "weather" in review_modules,
@@ -602,6 +613,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Carrier Document Pack",
             text=_carrier_claim_text(carrier_payload),
             evidence_ids=evidence_ids_by_module["carrier"],
+            cluster_ids=_cluster_ids_for_claim(
+                evidence_ids_by_module["carrier"],
+                evidence_cluster_ids_by_evidence_id,
+            ),
             status=_claim_status(
                 evidence_ids_by_module["carrier"],
                 "carrier" in review_modules,
@@ -612,6 +627,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Case Law",
             text=_caselaw_claim_text(caselaw_payload),
             evidence_ids=evidence_ids_by_module["caselaw"],
+            cluster_ids=_cluster_ids_for_claim(
+                evidence_ids_by_module["caselaw"],
+                evidence_cluster_ids_by_evidence_id,
+            ),
             status=_claim_status(
                 evidence_ids_by_module["caselaw"],
                 "caselaw" in review_modules or bool(uncertain or not_found),
@@ -622,6 +641,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Citation Spot-Check",
             text=citecheck_payload.get("disclaimer", "Citation spot-check completed."),
             evidence_ids=evidence_ids_by_module["citation_verify"],
+            cluster_ids=_cluster_ids_for_claim(
+                evidence_ids_by_module["citation_verify"],
+                evidence_cluster_ids_by_evidence_id,
+            ),
             status=_claim_status(
                 evidence_ids_by_module["citation_verify"],
                 bool(uncertain or not_found),
@@ -718,6 +741,18 @@ def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:
 
 def _normalize_cluster_url(url: str) -> str:
     return url.strip().rstrip("/").lower()
+
+
+def _cluster_ids_for_claim(
+    evidence_ids: list[str],
+    evidence_cluster_ids_by_evidence_id: Mapping[str, str],
+) -> list[str]:
+    cluster_ids: list[str] = []
+    for evidence_id in evidence_ids:
+        cluster_id = evidence_cluster_ids_by_evidence_id.get(evidence_id)
+        if cluster_id and cluster_id not in cluster_ids:
+            cluster_ids.append(cluster_id)
+    return cluster_ids
 
 
 def _claim_status(evidence_ids: list[str], has_review_event: bool) -> str:
