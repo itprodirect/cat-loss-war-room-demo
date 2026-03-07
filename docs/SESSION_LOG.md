@@ -53,10 +53,10 @@ Status: Complete
 - Merged to `main`.
 
 ## Current Snapshot
-Date: 2026-03-06
+Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 134 passing.
+- Test status: 139 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -296,9 +296,7 @@ Status: Complete
 - Curated the committed weather fixture so the offline demo lane reflects the higher relevance bar.
 - Verification:
   - `.venv\Scripts\python -m pytest tests/test_weather.py tests/test_citation_verify.py tests/test_offline_demo_pack.py -q` -> `34 passed`
-  - `.venv\Scripts\python -m pytest -q` -> `134 passed`
-
-
+  - `.venv\Scripts\python -m pytest -q` -> `128 passed`
 
 ## Session 22 - Memo Export Trust-Signal Pass
 Date: 2026-03-07
@@ -318,8 +316,6 @@ Status: Complete
   - `.venv\Scripts\python -m pytest tests/test_export.py tests/test_memo_contracts.py -q` -> `9 passed`
   - `.venv\Scripts\python -m pytest -q` -> `134 passed`
 
-
-
 ## Session 23 - Query Plan and Source-Tiering Hardening
 Date: 2026-03-07
 Status: Complete
@@ -334,4 +330,26 @@ Status: Complete
 - Verification:
   - `.venv\Scripts\python -m pytest tests/test_query_plan.py tests/test_source_scoring.py -q` -> `23 passed`
   - `.venv\Scripts\python -m pytest -q` -> `134 passed`
+
+## Session 24 - Adapter and Runtime Contract Consistency
+Date: 2026-03-07
+Status: Complete
+
+- Added canonical intake/query-plan adapters and payload helpers in `src/war_room/models.py`:
+  - `adapt_query_plan`
+  - `case_intake_to_payload`
+  - `query_spec_to_payload`
+  - `query_plan_to_payloads`
+- Updated runtime module imports so `CaseIntake` now comes from `war_room.models` instead of leaking through `query_plan.py`.
+- Tightened render/query-plan boundaries:
+  - `render_markdown_memo()` now advertises mixed dict/model inputs across the full memo contract,
+  - `format_query_plan()` now normalizes mixed dict/model query payloads before formatting.
+- Expanded regression coverage in:
+  - `tests/test_models.py`
+  - `tests/test_query_plan.py`
+  - `tests/test_export.py`
+  - refreshed module tests to use the canonical model import path.
+- Verification:
+  - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_models.py tests/test_query_plan.py tests/test_export.py tests/test_memo_contracts.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py` -> `48 passed`
+  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `139 passed`
 

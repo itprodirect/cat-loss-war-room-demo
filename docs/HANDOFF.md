@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 134 passing, package-installed, no network calls in tests |
+| Tests | 139 passing, package-installed, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix, both using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -103,8 +103,3 @@ Core implementation lives in `src/war_room/`.
 - [METHOD.md](METHOD.md): module behavior and methodology
 - [SAFETY_GUARDRAILS.md](SAFETY_GUARDRAILS.md): safety boundaries
 - [eval/README.md](../eval/README.md): live eval lane rules and intake template
-
-
-
-
-
