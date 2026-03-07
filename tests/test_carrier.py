@@ -1,7 +1,6 @@
-﻿"""Tests for carrier_module - no network calls."""
+"""Tests for carrier_module - no network calls."""
 
 import tempfile
-from pathlib import Path
 
 from war_room.carrier_module import (
     _assemble_pack,
@@ -49,6 +48,54 @@ def test_assemble_pack_structure() -> None:
     assert isinstance(pack["common_defenses"], list)
     assert isinstance(pack["rebuttal_angles"], list)
     assert isinstance(pack["sources"], list)
+
+
+def test_generic_regulatory_pages_are_excluded() -> None:
+    results = [
+        {
+            "url": "https://floir.com/consumers",
+            "title": "Consumers - floir",
+            "snippet": "Generic consumer landing page",
+            "text": "Consumers page",
+            "category": "doi_complaints",
+        },
+        {
+            "url": "https://floir.com/reports/citizens-market-conduct-exam.pdf",
+            "title": "Citizens Market Conduct Exam Report",
+            "snippet": "Exam report for Citizens",
+            "text": "Complaint handling and claims findings",
+            "category": "doi_complaints",
+        },
+    ]
+
+    pack = _assemble_pack(_sample_intake(), results)
+
+    titles = [document["title"] for document in pack["document_pack"]]
+    assert "Consumers - floir" not in titles
+    assert "Citizens Market Conduct Exam Report" in titles
+
+
+def test_high_value_documents_rank_ahead_of_generic_articles() -> None:
+    results = [
+        {
+            "url": "https://news.example.com/citizens-story",
+            "title": "Citizens Faces Questions After Milton",
+            "snippet": "News story",
+            "text": "General coverage",
+            "category": "regulatory_action",
+        },
+        {
+            "url": "https://floir.com/docs/final-order.pdf",
+            "title": "Final Order on Citizens Claims Practices",
+            "snippet": "Official order",
+            "text": "Order regarding claims practices",
+            "category": "regulatory_action",
+        },
+    ]
+
+    pack = _assemble_pack(_sample_intake(), results)
+
+    assert pack["document_pack"][0]["title"] == "Final Order on Citizens Claims Practices"
 
 
 def test_extract_defenses() -> None:
