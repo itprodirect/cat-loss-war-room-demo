@@ -1,7 +1,6 @@
-﻿"""Tests for weather_module - no network calls, uses mock/cache."""
+"""Tests for weather_module - no network calls, uses mock/cache."""
 
 import tempfile
-from pathlib import Path
 
 from war_room.query_plan import CaseIntake
 from war_room.weather_module import _assemble_brief, _extract_metrics, build_weather_brief
@@ -68,6 +67,79 @@ def test_assemble_brief_structure() -> None:
     assert isinstance(brief["metrics"], dict)
     assert isinstance(brief["sources"], list)
     assert len(brief["sources"]) == 2
+
+
+def test_weather_excludes_generic_reference_pages() -> None:
+    results = [
+        {
+            "url": "https://coast.noaa.gov/states/fast-facts/hurricane-costs.html",
+            "title": "Hurricane Costs",
+            "snippet": "Generic costs page",
+            "text": "Historic costs.",
+            "category": "loss_estimate",
+        },
+        {
+            "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
+            "title": "POST TROPICAL CYCLONE REPORT",
+            "snippet": "Pinellas County saw hurricane-force wind gusts during Milton.",
+            "text": "Pinellas County saw hurricane-force wind gusts of 105 mph.",
+            "category": "damage_report",
+        },
+    ]
+
+    brief = _assemble_brief(_sample_intake(), results)
+    titles = [source["title"] for source in brief["sources"]]
+
+    assert "Hurricane Costs" not in titles
+    assert "POST TROPICAL CYCLONE REPORT" in titles
+
+
+def test_weather_prefers_county_specific_metrics() -> None:
+    results = [
+        {
+            "url": "https://www.nhc.noaa.gov/data/tcr/AL142024_Milton.pdf",
+            "title": "Hurricane Milton",
+            "snippet": "Storm report",
+            "text": "Milton reached 180 mph over open water before landfall.",
+            "category": "wind_data",
+        },
+        {
+            "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
+            "title": "POST TROPICAL CYCLONE REPORT",
+            "snippet": "Pinellas County observed 105 mph wind gusts.",
+            "text": "Pinellas County observed 105 mph wind gusts and 8 ft storm surge.",
+            "category": "damage_report",
+        },
+    ]
+
+    brief = _assemble_brief(_sample_intake(), results)
+
+    assert brief["metrics"]["max_wind_mph"] == 105
+    assert brief["metrics"]["storm_surge_ft"] == 8.0
+
+
+def test_weather_drops_navigation_heavy_observations() -> None:
+    results = [
+        {
+            "url": "https://www.nhc.noaa.gov/archive/2024/al14/al142024.public.019.shtml",
+            "title": "Hurricane MILTON",
+            "snippet": "[Home] [Mobile Site] [Text Version] Skip Navigation Links",
+            "text": "Navigation-heavy content without substance.",
+            "category": "wind_data",
+        },
+        {
+            "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
+            "title": "POST TROPICAL CYCLONE REPORT",
+            "snippet": "Pinellas County reported roof damage and widespread water intrusion.",
+            "text": "Pinellas County reported roof damage and widespread water intrusion.",
+            "category": "damage_report",
+        },
+    ]
+
+    brief = _assemble_brief(_sample_intake(), results)
+
+    assert all("Skip Navigation" not in observation for observation in brief["key_observations"])
+    assert any("Pinellas County" in observation for observation in brief["key_observations"])
 
 
 def test_build_weather_brief_without_client_returns_structured_fallback() -> None:

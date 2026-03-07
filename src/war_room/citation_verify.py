@@ -8,7 +8,9 @@ Mandatory disclaimer: KeyCite/Shepardize before reliance.
 
 from __future__ import annotations
 
+import re
 from typing import Any
+from urllib.parse import urlparse
 
 from war_room.cache_io import cached_call
 from war_room.exa_client import BudgetExhausted, ExaClient
@@ -22,6 +24,19 @@ DISCLAIMER = (
 )
 
 MAX_CHECKS = 6  # Cap citation checks per run to conserve Exa budget
+
+_LEGAL_HOST_SUFFIXES = {
+    "casetext.com",
+    "courtlistener.com",
+    "flcourts.gov",
+    "law.cornell.edu",
+    "justia.com",
+    "leagle.com",
+    "scholar.google.com",
+    "uscourts.gov",
+}
+
+_STOP_WORDS = {"co", "corp", "corporation", "company", "inc", "insurance", "the", "v", "vs"}
 
 
 def _extract_cases(caselaw_pack: Any) -> list[dict[str, str]]:
@@ -76,8 +91,8 @@ def spot_check_citations(
 
         check_key = f"{case_key_base}__{search_term}"
 
-        def _verify(q=search_term) -> dict[str, Any]:
-            return _do_check(q, client)
+        def _verify(q=search_term, case_name=name, cite=citation) -> dict[str, Any]:
+            return _do_check(q, client, case_name=case_name, citation=cite)
 
         result = cached_call(
             check_key,
@@ -114,7 +129,13 @@ def spot_check_citations(
 _TIER_RANK = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
 
 
-def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
+def _do_check(
+    query: str,
+    client: ExaClient,
+    *,
+    case_name: str | None = None,
+    citation: str | None = None,
+) -> dict[str, Any]:
     """Run a single citation spot-check."""
     try:
         hits = client.search(query, k=5)
@@ -141,14 +162,24 @@ def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
             "note": "No results found",
         }
 
-    # Score all hits and pick the best tier
     scored_hits = []
     for hit in hits:
         score = score_url(hit["url"])
-        scored_hits.append((hit, score))
-    scored_hits.sort(key=lambda item: _TIER_RANK.get(item[1]["tier"], 9))
+        scored_hits.append((hit, score, _match_strength(hit, case_name, citation)))
 
-    best_hit, best_score = scored_hits[0]
+    if citation or case_name:
+        scored_hits = [item for item in scored_hits if item[2][0] > 0 or item[2][1] > 0]
+        if not scored_hits:
+            return {
+                "status": "not_found",
+                "badge": "not_found",
+                "source_url": None,
+                "note": "No relevant citation match found",
+            }
+
+    scored_hits.sort(key=lambda item: _hit_priority(item[0], item[1], item[2]))
+
+    best_hit, best_score, best_match = scored_hits[0]
 
     if best_score["tier"] == "official":
         return {
@@ -158,11 +189,12 @@ def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
             "note": f"Found on official source: {best_score['hostname']}",
         }
     if best_score["tier"] == "professional":
+        detail = "citation-aligned result" if best_match[0] > 0 else "professional source"
         return {
             "status": "uncertain",
             "badge": "warning",
             "source_url": best_hit["url"],
-            "note": f"Found on professional source: {best_score['hostname']} - verify independently",
+            "note": f"Found on {detail}: {best_score['hostname']} - verify independently",
         }
 
     return {
@@ -171,3 +203,62 @@ def _do_check(query: str, client: ExaClient) -> dict[str, Any]:
         "source_url": best_hit["url"],
         "note": f"Found on {best_score['hostname']} - unvetted source, verify independently",
     }
+
+
+def _hit_priority(hit: dict[str, Any], score: dict[str, Any], match: tuple[int, int, int]) -> tuple[int, int, int, int, str]:
+    """Prefer citation-aligned legal hosts over generic domain-tier ranking alone."""
+    citation_match, name_match, legal_host = match
+    title = (hit.get("title", "") or "").lower()
+    return (
+        0 if citation_match else 1,
+        0 if legal_host else 1,
+        _TIER_RANK.get(score["tier"], 9),
+        0 if name_match else 1,
+        title,
+    )
+
+
+def _match_strength(hit: dict[str, Any], case_name: str | None, citation: str | None) -> tuple[int, int, int]:
+    """Return citation match, case-name match, and legal-host signals for a hit."""
+    combined_text = " ".join(
+        [
+            hit.get("title", "") or "",
+            hit.get("snippet", "") or "",
+            (hit.get("text", "") or "")[:1200],
+            hit.get("url", "") or "",
+        ]
+    ).lower()
+
+    citation_match = 0
+    if citation and citation.lower() in combined_text:
+        citation_match = 1
+
+    name_match = 0
+    if case_name:
+        tokens = _significant_tokens(case_name)
+        if tokens:
+            matched = sum(1 for token in tokens if token in combined_text)
+            if matched >= min(2, len(tokens)):
+                name_match = 1
+
+    legal_host = 1 if _is_legal_host(hit.get("url", "") or "") else 0
+    return (citation_match, name_match, legal_host)
+
+
+def _significant_tokens(case_name: str) -> list[str]:
+    cleaned = re.sub(r"[^a-z0-9 ]+", " ", case_name.lower())
+    tokens = [token for token in cleaned.split() if len(token) > 2 and token not in _STOP_WORDS]
+    return tokens[:4]
+
+
+def _is_legal_host(url: str) -> bool:
+    try:
+        hostname = (urlparse(url).hostname or "").lower().removeprefix("www.")
+    except Exception:
+        return False
+
+    if not hostname:
+        return False
+    if hostname.endswith(".gov"):
+        return True
+    return any(hostname == suffix or hostname.endswith("." + suffix) for suffix in _LEGAL_HOST_SUFFIXES)

@@ -1,7 +1,6 @@
 """Tests for citation_verify module - no network calls."""
 
 import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock
 
 from war_room.citation_verify import MAX_CHECKS, _do_check, spot_check_citations
@@ -30,7 +29,11 @@ def test_skips_blank_citations():
         ],
     }
     client = _mock_client_with_hits([
-        {"url": "https://scholar.google.com/case", "title": "Result"},
+        {
+            "url": "https://scholar.google.com/case",
+            "title": "Result",
+            "text": "Real v. Case 123 So. 3d 456",
+        },
     ])
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -55,7 +58,7 @@ def test_max_checks_cap():
     ]
     pack = {"issues": [{"issue": "Test", "cases": cases}]}
     client = _mock_client_with_hits([
-        {"url": "https://example.com", "title": "Hit"},
+        {"url": "https://example.com", "title": "Hit", "text": "Case result"},
     ])
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -74,26 +77,90 @@ def test_prefers_official_source_among_hits():
     """When multiple hits exist, pick the best-tier one."""
     client = _mock_client_with_hits(
         [
-            {"url": "https://random-blog.com/article", "title": "Blog"},
-            {"url": "https://www.flcourts.gov/case/123", "title": "FL Courts"},
-            {"url": "https://insurancejournal.com/article", "title": "Journal"},
+            {
+                "url": "https://random-blog.com/article",
+                "title": "Blog",
+                "text": "Smith v. Jones 123 So. 3d 456",
+            },
+            {
+                "url": "https://www.flcourts.gov/case/123",
+                "title": "FL Courts",
+                "text": "Smith v. Jones 123 So. 3d 456",
+            },
+            {
+                "url": "https://insurancejournal.com/article",
+                "title": "Journal",
+                "text": "Smith v. Jones 123 So. 3d 456",
+            },
         ]
     )
 
-    result = _do_check("Smith v. Jones 123 So. 3d 456", client)
+    result = _do_check(
+        "Smith v. Jones 123 So. 3d 456",
+        client,
+        case_name="Smith v. Jones",
+        citation="123 So. 3d 456",
+    )
     assert result["status"] == "verified"
     assert "flcourts.gov" in result["source_url"]
+
+
+def test_prefers_citation_aligned_result_over_unrelated_official_hit():
+    client = _mock_client_with_hits(
+        [
+            {
+                "url": "https://www.flcourts.gov/general/news",
+                "title": "Court News",
+                "text": "Administrative order update with no matching citation.",
+            },
+            {
+                "url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+                "title": "Sebo v. American Home Assurance Co.",
+                "text": "Sebo v. American Home Assurance Co., 208 So. 3d 694 (Fla. 2016).",
+            },
+        ]
+    )
+
+    result = _do_check(
+        "Sebo v. American Home Assurance Co. 208 So. 3d 694",
+        client,
+        case_name="Sebo v. American Home Assurance Co.",
+        citation="208 So. 3d 694",
+    )
+
+    assert result["status"] == "uncertain"
+    assert "casetext.com" in result["source_url"]
 
 
 def test_professional_source_is_uncertain():
     """Professional-only hits -> uncertain."""
     client = _mock_client_with_hits(
-        [{"url": "https://insurancejournal.com/article", "title": "Article"}]
+        [{"url": "https://insurancejournal.com/article", "title": "Article", "text": "Doe v. Carrier 456 F.3d 789"}]
     )
 
-    result = _do_check("Doe v. Carrier 456 F.3d 789", client)
+    result = _do_check(
+        "Doe v. Carrier 456 F.3d 789",
+        client,
+        case_name="Doe v. Carrier",
+        citation="456 F.3d 789",
+    )
     assert result["status"] == "uncertain"
     assert result["badge"] == "warning"
+
+
+def test_irrelevant_hits_are_not_found():
+    client = _mock_client_with_hits(
+        [{"url": "https://insurancejournal.com/article", "title": "Article", "text": "General insurance litigation update."}]
+    )
+
+    result = _do_check(
+        "Doe v. Carrier 456 F.3d 789",
+        client,
+        case_name="Doe v. Carrier",
+        citation="456 F.3d 789",
+    )
+    assert result["status"] == "not_found"
+    assert result["badge"] == "not_found"
 
 
 def test_no_hits_is_not_found():

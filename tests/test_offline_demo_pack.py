@@ -20,6 +20,12 @@ _GENERIC_CARRIER_TITLES = {
     "organization and operation - floir",
 }
 
+_GENERIC_WEATHER_TITLES = {
+    "hurricane costs",
+    "news and media: disaster 4834 - fema",
+    "dr-4834 public notice 001 - fema.gov",
+}
+
 _CASE_COMMENTARY_MARKERS = (
     "jd supra",
     "what homeowners must know",
@@ -53,6 +59,11 @@ class TestWeatherSample:
         for s in data["sources"]:
             assert "url" in s
             assert "badge" in s
+
+    def test_excludes_generic_weather_reference_pages(self):
+        data = _load("weather")
+        titles = {source["title"].strip().lower() for source in data["sources"]}
+        assert not titles.intersection(_GENERIC_WEATHER_TITLES)
 
 
 class TestCarrierSample:
@@ -125,4 +136,3 @@ class TestCitationVerifySample:
         case_titles = [check["case_name"].lower() for check in data["checks"]]
         for marker in _CASE_COMMENTARY_MARKERS:
             assert all(marker not in title for title in case_titles)
-
