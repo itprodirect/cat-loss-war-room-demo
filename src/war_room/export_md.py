@@ -353,7 +353,11 @@ def _append_evidence_index(lines: list[str], evidence_items: list[Any]) -> None:
 def _append_review_log(lines: list[str], review_events: list[Any]) -> None:
     """Append review-required audit events when present."""
     for event in review_events:
-        lines.append(f"- **{event.label}:** {event.detail}")
+        cluster_ids = ", ".join(event.related_cluster_ids) if event.related_cluster_ids else "none"
+        lines.append(
+            f"- **{event.label}:** {event.detail} "
+            f"| Evidence clusters: {cluster_ids}"
+        )
     lines.append("")
 
 

@@ -321,6 +321,7 @@ class ReviewEvent(BaseModel):
     detail: str = Field(min_length=1)
     module: str | None = None
     related_evidence_ids: list[str] = Field(default_factory=list)
+    related_cluster_ids: list[str] = Field(default_factory=list)
 
 
 class ExportArtifact(BaseModel):
@@ -563,6 +564,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                     detail=warning,
                     module=module_key,
                     related_evidence_ids=evidence_ids_by_module[module_key],
+                    related_cluster_ids=_cluster_ids_for_evidence_ids(
+                        evidence_ids_by_module[module_key],
+                        evidence_cluster_ids_by_evidence_id,
+                    ),
                 )
             )
 
@@ -578,6 +583,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 detail=f"{uncertain} citation checks are uncertain.",
                 module="citation_verify",
                 related_evidence_ids=evidence_ids_by_module["citation_verify"],
+                related_cluster_ids=_cluster_ids_for_evidence_ids(
+                    evidence_ids_by_module["citation_verify"],
+                    evidence_cluster_ids_by_evidence_id,
+                ),
             )
         )
     if not_found:
@@ -589,6 +598,10 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 detail=f"{not_found} citation checks were not found on reviewed sources.",
                 module="citation_verify",
                 related_evidence_ids=evidence_ids_by_module["citation_verify"],
+                related_cluster_ids=_cluster_ids_for_evidence_ids(
+                    evidence_ids_by_module["citation_verify"],
+                    evidence_cluster_ids_by_evidence_id,
+                ),
             )
         )
 
@@ -599,7 +612,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Weather Corroboration",
             text=weather_payload.get("event_summary", "Weather evidence assembled."),
             evidence_ids=evidence_ids_by_module["weather"],
-            cluster_ids=_cluster_ids_for_claim(
+            cluster_ids=_cluster_ids_for_evidence_ids(
                 evidence_ids_by_module["weather"],
                 evidence_cluster_ids_by_evidence_id,
             ),
@@ -613,7 +626,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Carrier Document Pack",
             text=_carrier_claim_text(carrier_payload),
             evidence_ids=evidence_ids_by_module["carrier"],
-            cluster_ids=_cluster_ids_for_claim(
+            cluster_ids=_cluster_ids_for_evidence_ids(
                 evidence_ids_by_module["carrier"],
                 evidence_cluster_ids_by_evidence_id,
             ),
@@ -627,7 +640,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Case Law",
             text=_caselaw_claim_text(caselaw_payload),
             evidence_ids=evidence_ids_by_module["caselaw"],
-            cluster_ids=_cluster_ids_for_claim(
+            cluster_ids=_cluster_ids_for_evidence_ids(
                 evidence_ids_by_module["caselaw"],
                 evidence_cluster_ids_by_evidence_id,
             ),
@@ -641,7 +654,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Citation Spot-Check",
             text=citecheck_payload.get("disclaimer", "Citation spot-check completed."),
             evidence_ids=evidence_ids_by_module["citation_verify"],
-            cluster_ids=_cluster_ids_for_claim(
+            cluster_ids=_cluster_ids_for_evidence_ids(
                 evidence_ids_by_module["citation_verify"],
                 evidence_cluster_ids_by_evidence_id,
             ),
@@ -743,7 +756,7 @@ def _normalize_cluster_url(url: str) -> str:
     return url.strip().rstrip("/").lower()
 
 
-def _cluster_ids_for_claim(
+def _cluster_ids_for_evidence_ids(
     evidence_ids: list[str],
     evidence_cluster_ids_by_evidence_id: Mapping[str, str],
 ) -> list[str]:

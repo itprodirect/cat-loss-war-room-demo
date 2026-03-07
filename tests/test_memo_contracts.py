@@ -210,6 +210,14 @@ def test_run_audit_snapshot_tracks_review_events_and_claim_status():
         claim.claim_id == "citation-check-status" and claim.cluster_ids == ["cluster-3"]
         for claim in snapshot.memo_claims
     )
+    assert any(
+        event.event_id == "weather-warning-1" and event.related_cluster_ids == ["cluster-1"]
+        for event in snapshot.review_events
+    )
+    assert any(
+        event.event_id == "citation-uncertain" and event.related_cluster_ids == ["cluster-3"]
+        for event in snapshot.review_events
+    )
 
 
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():

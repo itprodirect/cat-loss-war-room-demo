@@ -149,6 +149,8 @@ def test_render_surfaces_review_flags_when_present():
     assert "Citation review: 1 uncertain and 0 not found entries require manual verification." in md
     assert "Appendix: Review Log" in md
     assert "Citation review required" in md
+    assert "Evidence clusters: cluster-1" in md
+    assert "Evidence clusters: cluster-3" in md
 
 
 def test_render_includes_evidence_clusters():
