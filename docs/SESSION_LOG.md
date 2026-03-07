@@ -56,7 +56,7 @@ Status: Complete
 Date: 2026-03-06
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 122 passing.
+- Test status: 128 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -280,4 +280,21 @@ Status: Complete
 - Verification:
   - `.venv\Scripts\python -m pytest tests/test_carrier.py tests/test_caselaw.py tests/test_caselaw_filter.py tests/test_offline_demo_pack.py -q` -> `39 passed`
   - `.venv\Scripts\python -m pytest -q` -> `122 passed`
+
+
+
+## Session 21 - Weather and Citation Quality Hardening
+Date: 2026-03-07
+Status: Complete
+
+- Tightened weather-result curation to demote generic reference pages, prefer county/report-like sources, and filter navigation-heavy observations.
+- Tightened citation spot-check ranking to require citation/name alignment before trusting a hit and to prefer legal-host matches over unrelated official pages.
+- Added stronger regression coverage in:
+  - `tests/test_weather.py`
+  - `tests/test_citation_verify.py`
+  - `tests/test_offline_demo_pack.py`
+- Curated the committed weather fixture so the offline demo lane reflects the higher relevance bar.
+- Verification:
+  - `.venv\Scripts\python -m pytest tests/test_weather.py tests/test_citation_verify.py tests/test_offline_demo_pack.py -q` -> `34 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `128 passed`
 
