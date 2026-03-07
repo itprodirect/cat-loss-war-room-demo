@@ -3,7 +3,7 @@
 AI-powered catastrophic insurance loss litigation research tool.
 Built for demo at Merlin Law Group.
 
-> **DEMO RESEARCH MEMO — NOT LEGAL ADVICE**
+> **DEMO RESEARCH MEMO - NOT LEGAL ADVICE**
 > All outputs are for demonstration purposes only. Verify all citations
 > independently before any legal reliance. See [SAFETY_GUARDRAILS.md](docs/SAFETY_GUARDRAILS.md).
 
@@ -20,7 +20,7 @@ pip install -e . --no-deps --no-build-isolation
 
 # Copy env template
 cp .env.example .env
-# Edit .env to add your EXA_API_KEY (optional — demo runs from cache)
+# Edit .env to add your EXA_API_KEY (optional - demo runs from cache)
 
 # Run tests
 python -m war_room
@@ -43,12 +43,12 @@ APIs.
 
 Given a catastrophic loss case (hurricane, hail, etc.), the war room notebook:
 
-1. **Intake** — Captures case facts (location, date, carrier, policy type, posture)
-2. **Query Plan** — Generates 12–18 targeted research queries across three modules
-3. **Weather Intel** — Gathers official weather data (.gov sources preferred)
-4. **Carrier Playbook** — Finds carrier denial patterns, regulatory actions, rebuttal angles
-5. **Case Law** — Searches relevant precedent organized by legal issue
-6. **Export** — Produces a structured research memo with source confidence badges
+1. **Intake** - Captures case facts (location, date, carrier, policy type, posture)
+2. **Query Plan** - Generates 12-18 targeted research queries across three modules
+3. **Weather Intel** - Gathers official weather data (.gov sources preferred)
+4. **Carrier Playbook** - Finds carrier denial patterns, regulatory actions, rebuttal angles
+5. **Case Law** - Searches relevant precedent organized by legal issue
+6. **Export** - Produces a structured research memo with source confidence badges
 
 ## Jupyter Kernel (required)
 
@@ -61,22 +61,22 @@ python -m pip install ipykernel
 python -m ipykernel install --user --name cat-loss-war-room-demo --display-name "cat-loss-war-room-demo (.venv)"
 ```
 
-Then in JupyterLab select **Kernel → Change Kernel → cat-loss-war-room-demo (.venv)**.
+Then in JupyterLab select **Kernel -> Change Kernel -> cat-loss-war-room-demo (.venv)**.
 
 ## Offline Demo
 
-No API key needed — cached results are committed in `cache_samples/`.
+No API key needed - cached results are committed in `cache_samples/`.
 
 ```bash
 # Ensure USE_CACHE=true in .env (the default)
 source .venv/bin/activate
 jupyter notebook notebooks/01_case_war_room.ipynb
-# Run All — should complete in < 10 seconds
+# Run All - should complete in < 10 seconds
 ```
 
 ## Current Status
 
-**V2 product foundation landed:** Core demo pipeline is stable, `142` tests are passing, and CI now enforces:
+**V2 product foundation landed:** Core demo pipeline is stable, `143` tests are passing, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
@@ -103,8 +103,8 @@ See [CLAUDE.md](CLAUDE.md) for full repo layout and conventions.
 ## Disclaimer
 
 This tool is a research accelerator, not a legal oracle. All outputs carry:
-- Source confidence badges (🟢 official / 🟡 professional / 🔴 unvetted)
+- Source confidence badges (`official` / `professional` / `unvetted`)
 - Mandatory "VERIFY ALL CITATIONS" disclaimers
-- "DRAFT — ATTORNEY WORK PRODUCT" watermarks on exports
+- "DRAFT - ATTORNEY WORK PRODUCT" watermarks on exports
 
 No output should be used without independent verification by a licensed attorney.
